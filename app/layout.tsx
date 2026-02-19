@@ -19,9 +19,9 @@ const ibmPlex = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "coffeerun | find the perfect spot between everyone",
+  title: "ReactAssess | AI-Augmented Technical Assessment",
   description:
-    "Create a link, share it with friends, and we'll find the best coffee shop between everyone's locations.",
+    "Adaptive AI-augmented technical assessment platform that evaluates how developers build, understand, and ship React code using modern AI tools.",
   icons: {
     icon: "/icon.svg",
   },
@@ -52,9 +52,9 @@ export default function RootLayout({
             position="top-center"
             toastOptions={{
               style: {
-                background: "#241f1c",
-                border: "1px solid #3d3330",
-                color: "#f5e6d3",
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
               },
             }}
           />

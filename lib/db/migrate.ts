@@ -3,32 +3,27 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-config({
-  path: ".env.local",
-});
+config({ path: ".env.local" });
 
-const runMigrate = async () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error(
-      "DATABASE_URL is not defined. Make sure it's set in your environment variables."
-    );
-  }
+const connectionString =
+  process.env.POSTGRES_URL_NON_POOLING ?? process.env.DATABASE_URL;
 
-  const connection = postgres(process.env.DATABASE_URL, { max: 1 });
-  const db = drizzle(connection);
+if (!connectionString) {
+  console.error("POSTGRES_URL_NON_POOLING or DATABASE_URL is not set");
+  process.exit(1);
+}
 
+const sql = postgres(connectionString, { max: 1 });
+const db = drizzle(sql);
+
+async function main() {
   console.log("Running migrations...");
-
-  const start = Date.now();
   await migrate(db, { migrationsFolder: "./lib/db/migrations" });
-  const end = Date.now();
+  console.log("Migrations complete.");
+  await sql.end();
+}
 
-  console.log("Migrations completed in", end - start, "ms");
-  process.exit(0);
-};
-
-runMigrate().catch((err) => {
-  console.error("Migration failed");
-  console.error(err);
+main().catch((err) => {
+  console.error("Migration failed:", err);
   process.exit(1);
 });
