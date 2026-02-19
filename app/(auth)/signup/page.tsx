@@ -5,19 +5,23 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signInWithEmail, signInWithGoogle } from "@/lib/actions/auth";
+import { signUpWithEmail, signInWithGoogle } from "@/lib/actions/auth";
 import { APP_NAME } from "@/lib/constants";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    setSuccessMessage(null);
     startTransition(async () => {
-      const result = await signInWithEmail(formData);
+      const result = await signUpWithEmail(formData);
       if (result?.error) {
         setError(result.error);
+      } else if (result?.success) {
+        setSuccessMessage(result.success);
       }
     });
   }
@@ -32,13 +36,49 @@ export default function LoginPage() {
     });
   }
 
+  if (successMessage) {
+    return (
+      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+        <div className="w-full max-w-sm animate-slide-up">
+          <div className="glass-card rounded-xl p-8 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+              <svg
+                className="w-6 h-6 text-success"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ve sent a confirmation link to your email address. Click
+              it to activate your account.
+            </p>
+            <Link href="/login">
+              <Button variant="ghost" className="mt-2">
+                Back to sign in
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">{APP_NAME}</h1>
           <p className="text-muted-foreground mt-2 text-sm">
-            Sign in to your account
+            Create your account
           </p>
         </div>
 
@@ -50,6 +90,17 @@ export default function LoginPage() {
           )}
 
           <form action={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="Jane Smith"
+                autoComplete="name"
+                disabled={isPending}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -70,12 +121,16 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete="new-password"
                 disabled={isPending}
               />
+              <p className="text-xs text-muted-foreground">
+                Must be at least 6 characters
+              </p>
             </div>
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Signing in..." : "Sign in"}
+              {isPending ? "Creating account..." : "Create account"}
             </Button>
           </form>
 
@@ -116,12 +171,12 @@ export default function LoginPage() {
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="text-primary hover:underline font-medium"
             >
-              Sign up
+              Sign in
             </Link>
           </p>
         </div>
