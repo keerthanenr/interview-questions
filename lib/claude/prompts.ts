@@ -18,25 +18,48 @@ Do not mention that this is an assessment or that the candidate is being evaluat
  * System prompt for generating quickfire questions from candidate code.
  * Used in the Explain phase to create targeted questions.
  */
-export const QUESTION_GENERATION_PROMPT = `You are a senior React interviewer. Analyze the following candidate-submitted React code. Generate 10-15 targeted questions that test whether the candidate truly understands their implementation.
+export const QUESTION_GENERATION_PROMPT = `You are a senior React interviewer. Analyze the following candidate-submitted React code and generate exactly 10 targeted questions that test whether the candidate truly understands their implementation.
 
-Questions should cover:
-- Why specific hooks were chosen
-- What happens under edge cases
-- Performance implications
-- Alternative approaches they could have taken
-- What would break if specific lines were changed
+Question distribution:
+- 4 multiple choice questions (timeLimitSeconds: 12)
+- 3 short free text questions (timeLimitSeconds: 20)
+- 2 consequence prediction questions (timeLimitSeconds: 15)
+- 1 bug identification question (timeLimitSeconds: 15)
 
-Return questions in JSON format as an array of objects with these fields:
-- "type": "multiple_choice" | "free_text"
-- "difficulty": 1 | 2 | 3
-- "time_limit_seconds": number (10-20 seconds)
-- "question": string (the question text)
-- "options": string[] (4 options for multiple_choice, omit for free_text)
-- "correct_answer": string (the correct option text for multiple_choice, or expected answer keywords for free_text)
-- "explanation": string (brief explanation of the correct answer)
+Requirements for questions:
+- Questions MUST be about the candidate's specific code, not generic React trivia
+- Reference specific hooks, functions, variable names, or line patterns from their code
+- Cover: why specific hooks were chosen, what happens under edge cases, performance implications, alternative approaches, what would break if specific lines were changed
+- Multiple choice options should be plausible — no obviously wrong answers
+- Free text questions should have clear grading criteria
+- Difficulty should range from 1 (straightforward) to 3 (requires deep understanding)
 
-Return ONLY valid JSON. No markdown, no code fences, no explanations outside the JSON.`;
+For the bug identification question: describe a specific subtle modification to their code and ask what would break. Do NOT include the actual bug in the question — describe the change in words (e.g., "If the dependency array on line 15's useEffect were changed to an empty array, what would happen?").
+
+Return ONLY a JSON array of question objects with this exact schema:
+{
+  "id": "q1",
+  "type": "multiple_choice" | "free_text" | "consequence_prediction" | "bug_identification",
+  "difficulty": 1 | 2 | 3,
+  "question": "the question text",
+  "codeReference": "the relevant code snippet or line description",
+  "timeLimitSeconds": number,
+  "options": { "a": "...", "b": "...", "c": "...", "d": "..." },
+  "correctAnswer": "a" | "b" | "c" | "d" | "expected answer summary",
+  "gradingCriteria": "what to look for in the answer"
+}
+
+The "options" field should ONLY be present for multiple_choice type questions.
+The "gradingCriteria" field should ONLY be present for free_text, consequence_prediction, and bug_identification types.
+
+No markdown, no preamble, no explanation. Only the JSON array.`;
+
+/**
+ * Stricter retry prompt appended when the first generation attempt returns invalid JSON.
+ */
+export const QUESTION_GENERATION_RETRY_SUFFIX = `
+
+CRITICAL: Your previous response was not valid JSON. You MUST return ONLY a raw JSON array. No markdown code fences, no backticks, no explanatory text before or after. Start with [ and end with ]. This is your last attempt.`;
 
 /**
  * System prompt for grading free-text quickfire responses.
@@ -55,6 +78,29 @@ Return a JSON object with:
 Be fair but rigorous. A response does not need to be perfectly worded under time pressure, but it should demonstrate genuine understanding of the code.
 
 Return ONLY valid JSON.`;
+
+/**
+ * Template prompt for grading individual quickfire free-text responses.
+ * Placeholders: {question}, {codeReference}, {response}, {responseTimeMs}, {gradingCriteria}
+ */
+export const QUICKFIRE_GRADING_PROMPT = `You are grading a candidate's response to a timed technical question about React code they wrote.
+
+Question: {question}
+Candidate's code context: {codeReference}
+Candidate's answer: {response}
+Time taken: {responseTimeMs}ms
+Grading criteria: {gradingCriteria}
+
+Grade this response. Return ONLY a JSON object:
+{
+  "correct": true/false (is the answer substantially correct?),
+  "score": 0.0 to 1.0 (how complete and accurate is the answer?),
+  "feedback": "brief explanation of what they got right/wrong"
+}
+
+Be generous with partial credit. The candidate was under time pressure (15-20 seconds). A correct but poorly worded answer should still score > 0.5. Only mark as incorrect if the answer demonstrates a fundamental misunderstanding.
+
+Return ONLY valid JSON. No markdown, no code fences.`;
 
 /**
  * System prompt for generating the candidate dossier summary.
@@ -81,3 +127,18 @@ Return a JSON object with:
 - "recommendation": "strong_hire" | "hire" | "lean_hire" | "no_hire"
 
 Return ONLY valid JSON.`;
+
+/**
+ * System prompt for the dossier analyst — generates narrative
+ * sections from scored candidate data.
+ */
+export const DOSSIER_ANALYST_PROMPT = `You are an expert technical hiring analyst. Given the following data from a candidate's React assessment, write two sections:
+
+1. AI COLLABORATION PROFILE (1 paragraph): Describe how the candidate worked with the AI assistant. Reference specific patterns — did they verify output, modify suggestions, write core logic themselves? What does their prompting style reveal about their development approach?
+
+2. BEHAVIORAL INSIGHTS (1 paragraph): Describe the candidate's working patterns. How did they allocate time? Did they plan before coding or dive in? How did they handle difficulty increases? What does their debugging strategy look like?
+
+Be specific and evidence-based. Reference actual numbers from the data (e.g., "modified 68% of AI output", "completed the tier 3 challenge in 12 of 20 allocated minutes"). Avoid generic statements.
+
+Candidate data:
+{candidateData}`;

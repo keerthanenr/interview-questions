@@ -6,6 +6,7 @@ import {
   REVIEW_PHASE_MINUTES,
   APP_NAME,
 } from "@/lib/constants";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const phases = [
   {
@@ -79,6 +80,62 @@ export default async function AssessmentLandingPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+
+  // Look up the candidate by token
+  const supabase = createAdminClient();
+  const { data: candidate, error } = await supabase
+    .from("candidates")
+    .select("*, assessments(title)")
+    .eq("token", token)
+    .single();
+
+  if (error || !candidate) {
+    return (
+      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+        <div className="text-center animate-slide-up">
+          <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Invalid Assessment Link</h1>
+          <p className="text-muted-foreground text-sm">This link is invalid or has expired. Please contact your recruiter for a new link.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (candidate.status === "completed") {
+    return (
+      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+        <div className="text-center animate-slide-up">
+          <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Assessment Already Completed</h1>
+          <p className="text-muted-foreground text-sm">You&apos;ve already completed this assessment. Your results have been submitted.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (candidate.status === "expired") {
+    return (
+      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+        <div className="text-center animate-slide-up">
+          <div className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Assessment Expired</h1>
+          <p className="text-muted-foreground text-sm">This assessment link has expired. Please contact your recruiter for a new invitation.</p>
+        </div>
+      </main>
+    );
+  }
 
   const totalMinutes =
     BUILD_PHASE_MINUTES + EXPLAIN_PHASE_MINUTES + REVIEW_PHASE_MINUTES;

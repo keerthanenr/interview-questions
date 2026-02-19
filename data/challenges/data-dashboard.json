@@ -1,0 +1,27 @@
+{
+  "id": "data-dashboard",
+  "title": "Data Fetching Dashboard",
+  "tier": 2,
+  "timeLimit": 20,
+  "topics": ["useEffect", "async_await", "loading_error_states", "data_transformation", "conditional_rendering"],
+  "description": "<p>Build a <strong>data dashboard</strong> that fetches user data from a remote API and displays it in a searchable, well-structured layout.</p><p>Use <code>https://jsonplaceholder.typicode.com/users</code> as your data source. This endpoint returns an array of user objects with fields like <code>name</code>, <code>email</code>, <code>company.name</code>, and <code>address.city</code>.</p><p>Your component should handle all three states gracefully: <strong>loading</strong>, <strong>error</strong>, and <strong>success</strong> with data.</p>",
+  "requirements": [
+    "Fetch user data from https://jsonplaceholder.typicode.com/users on mount",
+    "Show a loading indicator while data is being fetched",
+    "Show a clear error message if the fetch fails (with a retry button)",
+    "Display users in a formatted table or card grid with name, email, company, and city",
+    "Add a search input that filters users by name or email (client-side)",
+    "Show an empty state message when search returns no results"
+  ],
+  "starterCode": {
+    "/App.js": "import React from 'react';\n\n// API endpoint: https://jsonplaceholder.typicode.com/users\n// Returns: [{ id, name, email, phone, company: { name }, address: { city } }, ...]\n\nexport default function App() {\n  return (\n    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>\n      <h1>User Dashboard</h1>\n      {/* Fetch and display user data here */}\n    </div>\n  );\n}"
+  },
+  "testCases": [
+    "Shows a loading state while fetching data",
+    "Displays user data in a structured layout after fetch completes",
+    "Shows an error message with retry button when fetch fails",
+    "Search input filters users by name",
+    "Search input filters users by email",
+    "Shows empty state when no users match the search query"
+  ]
+}

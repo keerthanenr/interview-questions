@@ -1,0 +1,64 @@
+[
+  {
+    "id": "fallback-q1",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "question": "What is the primary purpose of the useState hook in React?",
+    "codeReference": null,
+    "timeLimitSeconds": 12,
+    "options": {
+      "a": "To manage component state that persists across re-renders",
+      "b": "To fetch data from an external API on component mount",
+      "c": "To create a reference to a DOM element",
+      "d": "To run side effects after the component renders"
+    },
+    "correctAnswer": "a",
+    "gradingCriteria": null
+  },
+  {
+    "id": "fallback-q2",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "question": "What happens when you call a setState function with the same value as the current state?",
+    "codeReference": null,
+    "timeLimitSeconds": 12,
+    "options": {
+      "a": "React throws an error for redundant state updates",
+      "b": "React re-renders the component with the same state",
+      "c": "React bails out and skips re-rendering the component",
+      "d": "React queues the update but delays it until the next frame"
+    },
+    "correctAnswer": "c",
+    "gradingCriteria": null
+  },
+  {
+    "id": "fallback-q3",
+    "type": "free_text",
+    "difficulty": 2,
+    "question": "Explain the difference between useEffect with an empty dependency array and useEffect with no dependency array. When would you use each?",
+    "codeReference": null,
+    "timeLimitSeconds": 20,
+    "correctAnswer": "Empty array runs once on mount; no array runs after every render. Use empty for one-time setup like data fetching, no array for effects that need to run on every update.",
+    "gradingCriteria": "Should mention: empty array = mount only, no array = every render. Bonus for practical examples."
+  },
+  {
+    "id": "fallback-q4",
+    "type": "consequence_prediction",
+    "difficulty": 2,
+    "question": "If you pass an object literal as a prop to a child component wrapped in React.memo (e.g., <MemoChild style={{ color: 'red' }} />), what happens on each parent re-render and why?",
+    "codeReference": null,
+    "timeLimitSeconds": 15,
+    "correctAnswer": "The child re-renders every time because a new object reference is created on each render, defeating React.memo's shallow comparison.",
+    "gradingCriteria": "Must identify: new object reference created each render, React.memo does shallow comparison, so memoization is bypassed."
+  },
+  {
+    "id": "fallback-q5",
+    "type": "bug_identification",
+    "difficulty": 3,
+    "question": "A component uses useEffect to fetch data and set state, but the dependency array is empty. The component receives a userId prop that can change. What bug does this introduce and how would you fix it?",
+    "codeReference": "useEffect(() => {\n  fetch(`/api/users/${userId}`)\n    .then(res => res.json())\n    .then(data => setUser(data));\n}, []);",
+    "timeLimitSeconds": 15,
+    "correctAnswer": "The effect only runs on mount, so changing userId won't trigger a re-fetch. Fix by adding userId to the dependency array.",
+    "gradingCriteria": "Must identify: stale closure over userId, effect won't re-run. Fix: add userId to deps. Bonus: mention cleanup/abort controller."
+  }
+]

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ChallengePanel } from "./ChallengePanel";
 import { CodeEditorPanel } from "./CodeEditorPanel";
@@ -23,21 +24,29 @@ interface AssessmentLayoutProps {
     difficulty: 1 | 2 | 3 | 4 | 5;
     timeLimit: number;
   };
+  challengeId?: string;
   starterCode?: Record<string, string>;
   currentPhase?: Phase;
   sessionId?: string;
+  token?: string;
 }
 
 export function AssessmentLayout({
   challenge,
+  challengeId = "todo-list",
   starterCode,
   currentPhase = "build",
   sessionId = "demo-session",
+  token,
 }: AssessmentLayoutProps) {
+  const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(challenge.timeLimit * 60);
   const [codeState, setCodeState] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const codeStateRef = useRef(codeState);
   codeStateRef.current = codeState;
+
+  const isSubmittingRef = useRef(false);
 
   const phaseLabel =
     currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1);
@@ -48,6 +57,63 @@ export function AssessmentLayout({
     },
     [],
   );
+
+  // Submit and transition to the next phase
+  const handleSubmit = useCallback(async () => {
+    if (!token || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      const nextPhaseMap: Record<Phase, string> = {
+        build: "explain",
+        explain: "review",
+        review: "complete",
+      };
+      const toPhase = nextPhaseMap[currentPhase];
+
+      if (currentPhase === "build") {
+        const mainCode = codeStateRef.current["/App.js"] ?? "";
+        await fetch("/api/assess/challenge/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, code: mainCode, challengeId }),
+        });
+      }
+
+      await fetch("/api/assess/transition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, fromPhase: currentPhase, toPhase }),
+      });
+
+      if (toPhase === "complete") {
+        router.push(`/assess/${token}/complete`);
+      } else {
+        router.push(`/assess/${token}/${toPhase}`);
+      }
+    } catch {
+      toast.error("Failed to submit. Please try again.");
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }, [token, currentPhase, sessionId, challengeId, router]);
+
+  // Countdown timer — ticks every second, auto-submits at 0
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          toast("Time's up! Auto-submitting your work...");
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [handleSubmit]);
 
   // Intercept Ctrl+S / Cmd+S — save progress instead of browser "Save Page"
   useEffect(() => {
@@ -174,8 +240,8 @@ export function AssessmentLayout({
         <p className="text-xs text-muted-foreground">
           Your progress is saved automatically
         </p>
-        <Button disabled size="sm">
-          Submit & Continue
+        <Button size="sm" disabled={isSubmitting} onClick={handleSubmit}>
+          {isSubmitting ? "Submitting..." : "Submit & Continue"}
         </Button>
       </footer>
     </div>

@@ -1,5 +1,6 @@
 import { streamChat } from "@/lib/claude/client";
 import { BUILD_PHASE_SYSTEM_PROMPT } from "@/lib/claude/prompts";
+import { logEvent } from "@/lib/events/logger";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -13,10 +14,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Log prompt_sent server-side for reliability
+    const lastMessage = messages[messages.length - 1];
+    if (sessionId && lastMessage?.role === "user") {
+      logEvent({
+        sessionId,
+        eventType: "prompt_sent",
+        payload: {
+          prompt_text: lastMessage.content,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+
+    const startTime = Date.now();
     const stream = await streamChat(messages, BUILD_PHASE_SYSTEM_PROMPT);
 
-    // Convert the Anthropic SDK stream to a ReadableStream of text chunks
     const encoder = new TextEncoder();
+    let fullResponse = "";
 
     const readable = new ReadableStream({
       async start(controller) {
@@ -26,10 +41,26 @@ export async function POST(request: NextRequest) {
               event.type === "content_block_delta" &&
               event.delta.type === "text_delta"
             ) {
+              fullResponse += event.delta.text;
               controller.enqueue(encoder.encode(event.delta.text));
             }
           }
           controller.close();
+
+          // Log claude_response after stream completes (fire-and-forget)
+          if (sessionId) {
+            const durationMs = Date.now() - startTime;
+            logEvent({
+              sessionId,
+              eventType: "claude_response",
+              payload: {
+                response_text: fullResponse,
+                tokens_used: null,
+                model: "claude-sonnet-4-20250514",
+                duration_ms: durationMs,
+              },
+            });
+          }
         } catch (err) {
           controller.error(err);
         }

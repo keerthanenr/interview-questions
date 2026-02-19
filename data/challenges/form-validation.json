@@ -1,0 +1,32 @@
+{
+  "id": "form-validation",
+  "title": "Registration Form with Validation",
+  "tier": 3,
+  "timeLimit": 20,
+  "topics": ["controlled_components", "custom_hooks", "form_state", "validation_logic", "error_display"],
+  "description": "<p>Build a <strong>registration form</strong> with real-time field validation. The form should provide immediate feedback as users type, guiding them toward valid input.</p><p>Extract your validation logic into a <strong>custom hook</strong> called <code>useFormValidation</code> to keep your component clean and reusable.</p><p>The form should feel responsive &mdash; validate on blur or with a short debounce as the user types, and disable the submit button until all fields pass.</p>",
+  "requirements": [
+    "Build a form with fields: Name, Email, Password, Confirm Password",
+    "Validate Name: required, minimum 2 characters",
+    "Validate Email: required, must be a valid email format",
+    "Validate Password: required, minimum 8 characters, must contain at least one number and one letter",
+    "Validate Confirm Password: must match the Password field",
+    "Show validation errors below each field on blur or as the user types (debounced)",
+    "Disable the submit button until all fields are valid",
+    "On successful submit, display a success message showing the submitted data (except passwords)",
+    "Extract validation logic into a custom hook (useFormValidation)"
+  ],
+  "starterCode": {
+    "/App.js": "import React from 'react';\n\n// Tip: Create a useFormValidation hook to manage form state and validation\n// Consider validating on blur or with a debounce for better UX\n\nexport default function App() {\n  return (\n    <div style={{ maxWidth: '450px', margin: '0 auto', padding: '20px' }}>\n      <h1>Create Account</h1>\n      {/* Build your registration form here */}\n    </div>\n  );\n}"
+  },
+  "testCases": [
+    "Renders all four form fields (name, email, password, confirm password)",
+    "Shows error when name is less than 2 characters",
+    "Shows error for invalid email format",
+    "Shows error when password lacks a number or letter or is too short",
+    "Shows error when confirm password does not match password",
+    "Submit button is disabled when form has validation errors",
+    "Displays success message with submitted data on valid submit",
+    "Validation logic lives in a custom useFormValidation hook"
+  ]
+}

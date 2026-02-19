@@ -35,11 +35,69 @@ interface CodeEditorPanelProps {
 
 function CodeChangeTracker({
   onCodeChange,
+  sessionId,
+  lastClaudeCode,
+  lastClaudeCodeTime,
 }: {
   onCodeChange?: (files: Record<string, string>) => void;
+  sessionId: string;
+  lastClaudeCode: string | null;
+  lastClaudeCodeTime: number;
 }) {
   const { sandpack } = useSandpack();
   const prevSnapshot = useRef<Record<string, string>>({});
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastLoggedSnapshot = useRef<Record<string, string>>({});
+
+  const logCodeChange = useCallback(
+    (currentFiles: Record<string, string>, changedFiles: string[]) => {
+      // Debounced server-side logging (10s after last change)
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(() => {
+        const mainFile = currentFiles["/App.js"] ?? "";
+        fetch("/api/assess/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            eventType: "code_change",
+            payload: {
+              changed_files: changedFiles,
+              code_snapshot: mainFile,
+              timestamp: new Date().toISOString(),
+            },
+          }),
+        }).catch(() => {});
+
+        // Check for claude_output_accepted within 30s of a Claude response
+        if (lastClaudeCode && Date.now() - lastClaudeCodeTime < 30_000) {
+          const similarity = computeSimilarity(lastClaudeCode, mainFile);
+          let acceptanceType: "full" | "partial" | "rejected";
+          if (similarity > 0.9) acceptanceType = "full";
+          else if (similarity > 0.2) acceptanceType = "partial";
+          else acceptanceType = "rejected";
+
+          fetch("/api/assess/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              eventType: "claude_output_accepted",
+              payload: {
+                original: lastClaudeCode,
+                modified: mainFile,
+                acceptance_type: acceptanceType,
+                similarity: Math.round(similarity * 100),
+              },
+            }),
+          }).catch(() => {});
+        }
+
+        lastLoggedSnapshot.current = { ...currentFiles };
+      }, 10_000);
+    },
+    [sessionId, lastClaudeCode, lastClaudeCodeTime],
+  );
 
   const checkForChanges = useCallback(() => {
     const currentFiles: Record<string, string> = {};
@@ -57,17 +115,11 @@ function CodeChangeTracker({
     }
 
     if (changedFiles.length > 0) {
-      console.log({
-        event_type: "code_change",
-        payload: {
-          changed_files: changedFiles,
-          timestamp: new Date().toISOString(),
-        },
-      });
       prevSnapshot.current = currentFiles;
       onCodeChange?.(currentFiles);
+      logCodeChange(currentFiles, changedFiles);
     }
-  }, [sandpack.files, onCodeChange]);
+  }, [sandpack.files, onCodeChange, logCodeChange]);
 
   useEffect(() => {
     const interval = setInterval(checkForChanges, 2000);
@@ -75,6 +127,19 @@ function CodeChangeTracker({
   }, [checkForChanges]);
 
   return null;
+}
+
+function computeSimilarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const aLines = a.trim().split("\n");
+  const bLines = b.trim().split("\n");
+  const bSet = new Set(bLines);
+  let matching = 0;
+  for (const line of aLines) {
+    if (bSet.has(line)) matching++;
+  }
+  return matching / Math.max(aLines.length, 1);
 }
 
 function TerminalPanel() {
@@ -228,6 +293,13 @@ function EditorInner({
   sessionId: string;
 }) {
   const [activeTab, setActiveTab] = useState<BottomTab>("terminal");
+  const lastClaudeCodeRef = useRef<string | null>(null);
+  const lastClaudeCodeTimeRef = useRef<number>(0);
+
+  const handleClaudeCode = useCallback((code: string, timestamp: number) => {
+    lastClaudeCodeRef.current = code;
+    lastClaudeCodeTimeRef.current = timestamp;
+  }, []);
 
   const tabs: { key: BottomTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -313,11 +385,16 @@ function EditorInner({
           />
         </div>
         <div className={cn("h-full", activeTab !== "claude" && "hidden")}>
-          <ClaudeChatPanel sessionId={sessionId} />
+          <ClaudeChatPanel sessionId={sessionId} onClaudeCode={handleClaudeCode} />
         </div>
       </div>
 
-      <CodeChangeTracker onCodeChange={onCodeChange} />
+      <CodeChangeTracker
+        onCodeChange={onCodeChange}
+        sessionId={sessionId}
+        lastClaudeCode={lastClaudeCodeRef.current}
+        lastClaudeCodeTime={lastClaudeCodeTimeRef.current}
+      />
     </div>
   );
 }

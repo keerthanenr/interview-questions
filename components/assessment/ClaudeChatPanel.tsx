@@ -20,9 +20,10 @@ interface Message {
 
 interface ClaudeChatPanelProps {
   sessionId: string;
+  onClaudeCode?: (code: string, timestamp: number) => void;
 }
 
-export function ClaudeChatPanel({ sessionId }: ClaudeChatPanelProps) {
+export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -57,13 +58,19 @@ export function ClaudeChatPanel({ sessionId }: ClaudeChatPanelProps) {
         timestamp: new Date(),
       };
 
-      console.log({
-        event_type: "prompt_sent",
-        payload: {
-          prompt_text: userMessage.content,
-          timestamp: userMessage.timestamp.toISOString(),
-        },
-      });
+      // Log prompt_sent event to server (fire-and-forget)
+      fetch("/api/assess/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          eventType: "prompt_sent",
+          payload: {
+            prompt_text: userMessage.content,
+            timestamp: userMessage.timestamp.toISOString(),
+          },
+        }),
+      }).catch(() => {});
 
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
@@ -119,14 +126,11 @@ export function ClaudeChatPanel({ sessionId }: ClaudeChatPanelProps) {
           );
         }
 
-        console.log({
-          event_type: "claude_response",
-          payload: {
-            response_text: fullText,
-            tokens_used: null,
-            timestamp: new Date().toISOString(),
-          },
-        });
+        // Extract code blocks from Claude's response for tracking
+        const codeBlockMatch = fullText.match(/```[\w]*\n([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          onClaudeCode?.(codeBlockMatch[1], Date.now());
+        }
       } catch {
         setMessages((prev) =>
           prev.map((m) =>
@@ -142,7 +146,7 @@ export function ClaudeChatPanel({ sessionId }: ClaudeChatPanelProps) {
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming, sessionId],
+    [messages, isStreaming, sessionId, onClaudeCode],
   );
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {

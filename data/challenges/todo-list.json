@@ -1,0 +1,27 @@
+{
+  "id": "todo-list",
+  "title": "Interactive Todo List",
+  "tier": 1,
+  "timeLimit": 15,
+  "topics": ["useState", "event_handling", "list_rendering", "conditional_styling"],
+  "description": "<p>Build an <strong>interactive todo list</strong> component that lets users manage their tasks.</p><p>Focus on clean state management with <code>useState</code>, proper event handling, and clear visual feedback for completed items.</p><p>You may style the component however you like &mdash; inline styles, CSS modules, or a utility approach all work.</p>",
+  "requirements": [
+    "Add new todos via a text input and submit button (or Enter key)",
+    "Display todos in a list with the todo text and a completion toggle",
+    "Clicking a todo toggles its completed state (with visual styling \u2014 e.g., strikethrough)",
+    "A delete button on each todo removes it from the list",
+    "Show a count of remaining (uncompleted) todos",
+    "Empty input should not add a todo"
+  ],
+  "starterCode": {
+    "/App.js": "import React from 'react';\n\nexport default function App() {\n  return (\n    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>\n      <h1>Todo List</h1>\n      {/* Build your todo list here */}\n    </div>\n  );\n}"
+  },
+  "testCases": [
+    "Renders an input field and an add button",
+    "Adding a todo displays it in the list",
+    "Toggling a todo shows it as completed with strikethrough",
+    "Deleting a todo removes it from the list",
+    "Shows correct count of remaining todos",
+    "Empty input does not add a todo"
+  ]
+}

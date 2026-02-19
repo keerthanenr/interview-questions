@@ -1,0 +1,64 @@
+{
+  "id": "react-dashboard-mr",
+  "title": "Add user dashboard component",
+  "description": "This MR adds a new dashboard component that displays user stats, recent activity, and notification preferences. Please review the changes and leave your feedback.",
+  "author": "junior-dev",
+  "files": [
+    {
+      "path": "src/components/Dashboard.jsx",
+      "language": "jsx",
+      "oldCode": "",
+      "newCode": "import React, { useState, useEffect } from 'react';\n\nconst API_BASE = '/api';\n\n// TODO: move this to a shared constants file\nconst PAGE_SIZE = 5;\n\nfunction ActivityItem({ activity }) {\n  return (\n    <div\n      onClick={() => window.open(activity.link)}\n      style={{ padding: '12px', borderBottom: '1px solid #eee', cursor: 'pointer' }}\n    >\n      <img src={activity.user_avatar} width={32} height={32} />\n      <span style={{ marginLeft: 8 }}>{activity.description}</span>\n      <span style={{ color: '#999', marginLeft: 'auto' }}>{activity.time_ago}</span>\n    </div>\n  );\n}\n\nfunction StatCard({ label, value, icon }) {\n  return (\n    <div style={{\n      padding: '20px',\n      borderRadius: '8px',\n      background: '#f9fafb',\n      border: '1px solid #e5e7eb',\n      textAlign: 'center'\n    }}>\n      <div style={{ fontSize: '24px', marginBottom: '4px' }}>{icon}</div>\n      <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{value}</div>\n      <div style={{ fontSize: '14px', color: '#6b7280' }}>{label}</div>\n    </div>\n  );\n}\n\nexport default function Dashboard({ user }) {\n  const [activities, setActivities] = useState([]);\n  const [filteredActivities, setFilteredActivities] = useState([]);\n  const [filter, setFilter] = useState('all');\n  const [page, setPage] = useState(1);\n  const [loading, setLoading] = useState(true);\n  const [notification_prefs, setNotification_prefs] = useState({\n    email: true,\n    push: false,\n    sms: false\n  });\n\n  useEffect(() => {\n    async function fetchActivities() {\n      try {\n        setLoading(true);\n        const res = await fetch(`${API_BASE}/activities?userId=${user.id}`);\n        const data = await res.json();\n        setActivities(data);\n      } catch (err) {\n        console.log(err);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchActivities();\n  }, []);\n\n  useEffect(() => {\n    if (filter === 'all') {\n      setFilteredActivities(activities);\n    } else {\n      setFilteredActivities(\n        activities.filter(a => a.type === filter)\n      );\n    }\n  }, [activities, filter]);\n\n  const paginatedItems = filteredActivities.slice(\n    page * PAGE_SIZE,\n    page * PAGE_SIZE + PAGE_SIZE\n  );\n\n  const totalPages = Math.ceil(filteredActivities.length / PAGE_SIZE);\n\n  function handleNotificationChange(key, value) {\n    setNotification_prefs(prev => ({\n      ...prev,\n      [key]: value\n    }));\n\n    fetch(`${API_BASE}/notifications/preferences`, {\n      method: 'PUT',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ [key]: value })\n    });\n  }\n\n  return (\n    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '24px' }}>\n      <div style={{ marginBottom: '24px' }}>\n        <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Welcome back, {user.name}</h1>\n        <div\n          style={{ marginTop: '8px', color: '#6b7280' }}\n          dangerouslySetInnerHTML={{ __html: user.bio }}\n        />\n      </div>\n\n      <div style={{\n        display: 'grid',\n        gridTemplateColumns: 'repeat(4, 1fr)',\n        gap: '16px',\n        marginBottom: '32px'\n      }}>\n        <StatCard label=\"Projects\" value={user.stats.projects} icon=\"\\ud83d\\udcc1\" />\n        <StatCard label=\"Commits\" value={user.stats.commits} icon=\"\\ud83d\\udcdd\" />\n        <StatCard label=\"PRs Merged\" value={user.stats.prs_merged} icon=\"\\u2705\" />\n        <StatCard label=\"Reviews\" value={user.stats.reviews} icon=\"\\ud83d\\udd0d\" />\n      </div>\n\n      <div style={{ marginBottom: '32px' }}>\n        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>\n          <h2 style={{ fontSize: '18px', fontWeight: '600' }}>Recent Activity</h2>\n          <div style={{ display: 'flex', gap: '8px' }}>\n            {['all', 'commit', 'review', 'issue'].map(f => (\n              <button\n                key={f}\n                onClick={() => { setFilter(f); setPage(1); }}\n                style={{\n                  padding: '6px 12px',\n                  borderRadius: '6px',\n                  border: '1px solid #d1d5db',\n                  background: filter === f ? '#3b82f6' : 'white',\n                  color: filter === f ? 'white' : '#374151',\n                  cursor: 'pointer',\n                  textTransform: 'capitalize'\n                }}\n              >\n                {f}\n              </button>\n            ))}\n          </div>\n        </div>\n\n        {loading ? (\n          <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>\n            Loading activities...\n          </div>\n        ) : (\n          <>\n            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>\n              {paginatedItems.map((activity, idx) => (\n                <ActivityItem\n                  key={idx}\n                  activity={activity}\n                  style={{ borderColor: '#e5e7eb' }}\n                  data={activities.filter(a => a.type === activity.type)}\n                />\n              ))}\n              {paginatedItems.length === 0 && (\n                <div style={{ textAlign: 'center', padding: '24px', color: '#9ca3af' }}>\n                  No activities found\n                </div>\n              )}\n            </div>\n\n            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>\n              <button\n                onClick={() => setPage(p => Math.max(1, p - 1))}\n                disabled={page === 1}\n                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', cursor: 'pointer' }}\n              >\n                Previous\n              </button>\n              <span style={{ padding: '8px 16px', color: '#6b7280' }}>\n                Page {page} of {totalPages}\n              </span>\n              <button\n                onClick={() => setPage(p => Math.min(totalPages, p + 1))}\n                disabled={page === totalPages}\n                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', cursor: 'pointer' }}\n              >\n                Next\n              </button>\n            </div>\n          </>\n        )}\n      </div>\n\n      <div>\n        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Notification Preferences</h2>\n        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>\n          {Object.entries(notification_prefs).map(([key, enabled]) => (\n            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>\n              <input\n                type=\"checkbox\"\n                checked={enabled}\n                onChange={e => handleNotificationChange(key, e.target.checked)}\n                style={{ width: '18px', height: '18px' }}\n              />\n              <span style={{ textTransform: 'capitalize' }}>{key} Notifications</span>\n            </label>\n          ))}\n        </div>\n      </div>\n    </div>\n  );\n}"
+    }
+  ],
+  "seededIssues": [
+    {
+      "id": "issue-1",
+      "category": "logic_bug",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [79, 82],
+      "description": "Off-by-one error in pagination: page state starts at 1, but slice calculation uses page * PAGE_SIZE which skips the first PAGE_SIZE items on page 1. Should be (page - 1) * PAGE_SIZE or page should start at 0.",
+      "severity": "high"
+    },
+    {
+      "id": "issue-2",
+      "category": "performance_antipattern",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [135, 140],
+      "description": "Creating new objects in render: ActivityItem receives inline style object and a freshly filtered data array as props on every render. Both create new references each render, defeating any potential memoization and causing unnecessary re-renders.",
+      "severity": "high"
+    },
+    {
+      "id": "issue-3",
+      "category": "state_management_issue",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [42, 43],
+      "description": "Storing derived state: filteredActivities is stored in useState and synced with useEffect, but it should be computed directly with useMemo since it's derived from activities and filter. The current approach causes an extra render cycle and risks stale state.",
+      "severity": "medium"
+    },
+    {
+      "id": "issue-4",
+      "category": "accessibility_gap",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [8, 15],
+      "description": "ActivityItem uses a clickable div with onClick but has no role='button', no tabIndex for keyboard focus, no onKeyDown handler, and no aria-label. The img tag on line 12 has no alt attribute, failing WCAG image requirements.",
+      "severity": "medium"
+    },
+    {
+      "id": "issue-5",
+      "category": "security_concern",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [101, 104],
+      "description": "Using dangerouslySetInnerHTML to render user.bio without any sanitization. If user.bio contains malicious content (script tags, event handlers), this creates a stored XSS vulnerability.",
+      "severity": "high"
+    },
+    {
+      "id": "issue-6",
+      "category": "code_style",
+      "file": "src/components/Dashboard.jsx",
+      "lineRange": [5, 50],
+      "description": "Inconsistent naming conventions: mixes camelCase (setLoading) with snake_case (notification_prefs, setNotification_prefs, time_ago, user_avatar, prs_merged). TODO comment left on line 5. No error boundary wrapping the dashboard component.",
+      "severity": "low"
+    }
+  ]
+}
