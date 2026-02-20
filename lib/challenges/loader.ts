@@ -1,5 +1,8 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import todoDB from "@/data/challenges/todo-list.json";
+import dataDashboard from "@/data/challenges/data-dashboard.json";
+import formValidation from "@/data/challenges/form-validation.json";
+import infiniteScroll from "@/data/challenges/infinite-scroll.json";
+import collabCounter from "@/data/challenges/collaborative-counter.json";
 
 export interface Challenge {
   id: string;
@@ -13,29 +16,24 @@ export interface Challenge {
   testCases: string[];
 }
 
+const CHALLENGES: Record<string, Challenge> = {
+  "todo-list": todoDB as unknown as Challenge,
+  "data-dashboard": dataDashboard as unknown as Challenge,
+  "form-validation": formValidation as unknown as Challenge,
+  "infinite-scroll": infiniteScroll as unknown as Challenge,
+  "collaborative-counter": collabCounter as unknown as Challenge,
+};
+
 export async function getChallenge(challengeId: string): Promise<Challenge> {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "challenges",
-    `${challengeId}.json`,
-  );
-  const raw = await fs.readFile(filePath, "utf-8");
-  return JSON.parse(raw) as Challenge;
+  const challenge = CHALLENGES[challengeId];
+  if (!challenge) {
+    throw new Error(`Challenge not found: ${challengeId}`);
+  }
+  return challenge;
 }
 
 export async function getChallengePool(): Promise<Challenge[]> {
-  const dir = path.join(process.cwd(), "data", "challenges");
-  const files = await fs.readdir(dir);
-  const challenges = await Promise.all(
-    files
-      .filter((f) => f.endsWith(".json"))
-      .map(async (f) => {
-        const raw = await fs.readFile(path.join(dir, f), "utf-8");
-        return JSON.parse(raw) as Challenge;
-      }),
-  );
-  return challenges.sort((a, b) => a.tier - b.tier);
+  return Object.values(CHALLENGES).sort((a, b) => a.tier - b.tier);
 }
 
 export async function getChallengeForSession(session: {

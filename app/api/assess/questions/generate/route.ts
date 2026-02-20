@@ -5,8 +5,7 @@ import {
 } from "@/lib/claude/prompts";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { loadFallbackQuestions } from "@/lib/data/loaders";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -85,11 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fall back to generic questions
-    const fallbackRaw = await fs.readFile(
-      path.join(process.cwd(), "data", "fallback-questions.json"),
-      "utf-8",
-    );
-    const fallbackQuestions = JSON.parse(fallbackRaw);
+    const fallbackQuestions = await loadFallbackQuestions();
 
     logEvent({
       sessionId,

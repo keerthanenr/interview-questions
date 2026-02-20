@@ -1,7 +1,6 @@
 import { logEvent } from "@/lib/events/logger";
+import { loadReviewScenario } from "@/lib/data/loaders";
 import { createAdminClient } from "@/lib/supabase/admin";
-import fs from "node:fs/promises";
-import path from "node:path";
 import type { NextRequest } from "next/server";
 
 interface ReviewComment {
@@ -51,19 +50,10 @@ export async function POST(request: NextRequest) {
     // Load review scenario for auto-categorization
     let seededIssues: SeededIssue[] = [];
     try {
-      const scenarioRaw = await fs.readFile(
-        path.join(
-          process.cwd(),
-          "data",
-          "review-scenarios",
-          "react-dashboard-mr.json",
-        ),
-        "utf-8",
-      );
-      const scenario = JSON.parse(scenarioRaw);
-      seededIssues = scenario.seededIssues ?? [];
+      const scenario = await loadReviewScenario();
+      seededIssues = (scenario.seededIssues as unknown as SeededIssue[]) ?? [];
     } catch {
-      // Scenario file missing — proceed without categorization
+      // Proceed without categorization
     }
 
     // Batch-insert comments with auto-categorization

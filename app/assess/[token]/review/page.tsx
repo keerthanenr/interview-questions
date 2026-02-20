@@ -1,8 +1,7 @@
 import { MRReviewPanel } from "@/components/assessment/MRReviewPanel";
 import { getSessionWithCandidate } from "@/lib/sessions/manager";
+import { loadReviewScenario } from "@/lib/data/loaders";
 import { redirect } from "next/navigation";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export default async function ReviewPhasePage({
   params,
@@ -26,17 +25,7 @@ export default async function ReviewPhasePage({
     );
   }
 
-  // Load the review scenario
-  const scenarioRaw = await fs.readFile(
-    path.join(
-      process.cwd(),
-      "data",
-      "review-scenarios",
-      "react-dashboard-mr.json",
-    ),
-    "utf-8",
-  );
-  const scenario = JSON.parse(scenarioRaw);
+  const scenario = await loadReviewScenario();
 
   return (
     <MRReviewPanel
