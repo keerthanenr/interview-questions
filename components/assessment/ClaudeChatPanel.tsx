@@ -29,6 +29,7 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastFailedMessageRef = useRef<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -137,11 +138,14 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
             m.id === assistantId
               ? {
                   ...m,
-                  content: "Sorry, something went wrong. Please try again.",
+                  content:
+                    "Something went wrong. Click the retry button or send your message again.",
                 }
               : m,
           ),
         );
+        // Store last failed message for retry
+        lastFailedMessageRef.current = text;
       } finally {
         setIsStreaming(false);
       }
@@ -286,6 +290,21 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
             </svg>
           </Button>
         </div>
+        {lastFailedMessageRef.current && !isStreaming && (
+          <button
+            type="button"
+            onClick={() => {
+              const msg = lastFailedMessageRef.current;
+              lastFailedMessageRef.current = null;
+              // Remove the error message
+              setMessages((prev) => prev.slice(0, -2));
+              if (msg) sendMessage(msg);
+            }}
+            className="text-xs text-primary hover:underline mt-1 px-1"
+          >
+            Retry last message
+          </button>
+        )}
         <p className="text-[10px] text-muted-foreground mt-1.5 px-1">
           Enter to send, Shift+Enter for newline
         </p>

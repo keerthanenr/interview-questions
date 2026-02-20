@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ReactDiffViewer, { DiffMethod } from "react-diff-viewer-continued";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { ScreenSizeGuard } from "./ScreenSizeGuard";
 
 interface ReviewFile {
   path: string;
@@ -50,13 +51,31 @@ export function MRReviewPanel({
   token,
 }: MRReviewPanelProps) {
   const router = useRouter();
-  const [summary, setSummary] = useState("");
-  const [comments, setComments] = useState<InlineComment[]>([]);
+  const [summary, setSummary] = useState(() => {
+    try {
+      return sessionStorage.getItem(`ra_review_summary_${sessionId}`) ?? "";
+    } catch { return ""; }
+  });
+  const [comments, setComments] = useState<InlineComment[]>(() => {
+    try {
+      const stored = sessionStorage.getItem(`ra_review_comments_${sessionId}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const [activeCommentLine, setActiveCommentLine] = useState<number | null>(
     null,
   );
   const [commentDraft, setCommentDraft] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Persist summary and comments to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem(`ra_review_summary_${sessionId}`, summary); } catch {}
+  }, [summary, sessionId]);
+
+  useEffect(() => {
+    try { sessionStorage.setItem(`ra_review_comments_${sessionId}`, JSON.stringify(comments)); } catch {}
+  }, [comments, sessionId]);
 
   const file = scenario.files[0];
 
@@ -172,6 +191,7 @@ export function MRReviewPanel({
   const commentedLines = comments.map((c) => `R-${c.lineNumber}`);
 
   return (
+    <ScreenSizeGuard>
     <div className="min-h-dvh bg-background flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 sticky top-0 z-10">
@@ -376,5 +396,6 @@ export function MRReviewPanel({
         </div>
       </div>
     </div>
+    </ScreenSizeGuard>
   );
 }

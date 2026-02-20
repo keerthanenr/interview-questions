@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge } from "@/components/ui/badge";
 import { DossierCharts } from "@/components/dashboard/dossier-charts";
+import { DossierPolling } from "@/components/dashboard/dossier-polling";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -117,14 +118,7 @@ export default async function CandidateDossierPage({
         )}
       </div>
 
-      {!dossier && candidate.status === "completed" && (
-        <div className="rounded-xl border bg-card/50 p-6 mb-6 text-center">
-          <div className="animate-pulse flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-            <span>Generating dossier... Refresh to check progress.</span>
-          </div>
-        </div>
-      )}
+      {!dossier && candidate.status === "completed" && <DossierPolling />}
 
       <div className="grid gap-6">
         {/* Technical Proficiency Score */}
@@ -335,6 +329,33 @@ export default async function CandidateDossierPage({
           </div>
           <div className="text-sm text-muted-foreground italic">
             {dossier?.summary ?? "[AI-generated behavioral insights will appear here]"}
+          </div>
+        </section>
+
+        {/* Session Replay — gated behind Professional plan */}
+        <section className="rounded-xl border bg-card/50 p-6 relative overflow-hidden">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+            </svg>
+            Session Replay
+          </h2>
+          <div className="absolute inset-0 bg-card/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-xl">
+            <svg className="w-8 h-8 text-muted-foreground mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <p className="text-sm font-medium mb-1">Session Replay</p>
+            <p className="text-xs text-muted-foreground mb-3">Available on Professional and Enterprise plans</p>
+            <Link href="/dashboard/billing">
+              <Button size="sm" variant="outline">
+                Upgrade to Professional
+              </Button>
+            </Link>
+          </div>
+          <div className="opacity-30 pointer-events-none">
+            <div className="h-48 rounded-lg bg-secondary/30 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Timeline visualization of key coding moments</p>
+            </div>
           </div>
         </section>
       </div>

@@ -3,7 +3,7 @@
   "title": "Registration Form with Validation",
   "tier": 3,
   "timeLimit": 20,
-  "topics": ["controlled_components", "custom_hooks", "form_state", "validation_logic", "error_display"],
+  "topics": ["forms", "custom_hooks", "validation"],
   "description": "<p>Build a <strong>registration form</strong> with real-time field validation. The form should provide immediate feedback as users type, guiding them toward valid input.</p><p>Extract your validation logic into a <strong>custom hook</strong> called <code>useFormValidation</code> to keep your component clean and reusable.</p><p>The form should feel responsive &mdash; validate on blur or with a short debounce as the user types, and disable the submit button until all fields pass.</p>",
   "requirements": [
     "Build a form with fields: Name, Email, Password, Confirm Password",

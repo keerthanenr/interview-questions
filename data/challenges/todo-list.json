@@ -3,7 +3,7 @@
   "title": "Interactive Todo List",
   "tier": 1,
   "timeLimit": 15,
-  "topics": ["useState", "event_handling", "list_rendering", "conditional_styling"],
+  "topics": ["state_basics", "event_handling", "list_rendering"],
   "description": "<p>Build an <strong>interactive todo list</strong> component that lets users manage their tasks.</p><p>Focus on clean state management with <code>useState</code>, proper event handling, and clear visual feedback for completed items.</p><p>You may style the component however you like &mdash; inline styles, CSS modules, or a utility approach all work.</p>",
   "requirements": [
     "Add new todos via a text input and submit button (or Enter key)",

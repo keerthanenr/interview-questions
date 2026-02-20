@@ -38,20 +38,28 @@ export default async function ExplainPhasePage({
     );
   }
 
-  // Generate questions from the candidate's build submission
+  // Fetch ALL build submissions for multi-challenge question generation
   const supabase = createAdminClient();
-  const { data: submission } = await supabase
+  const { data: submissions } = await supabase
     .from("submissions")
-    .select("code")
+    .select("code, metadata")
     .eq("session_id", session.id)
     .eq("phase", "build")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+    .order("created_at", { ascending: true });
 
-  const code = submission?.code ?? "";
+  // Combine all submission code
+  let combinedCode = "";
+  if (submissions && submissions.length > 0) {
+    combinedCode = submissions
+      .map((s, i) => {
+        const meta = (s.metadata as Record<string, unknown>) ?? {};
+        const challengeId = (meta.challenge_id as string) ?? `challenge-${i + 1}`;
+        return `// ─── Challenge: ${challengeId} ───\n${s.code ?? ""}`;
+      })
+      .join("\n\n");
+  }
 
-  // Call the question generation API
+  // Call the question generation API — it now handles multi-challenge internally
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : "http://localhost:3000";
@@ -59,7 +67,7 @@ export default async function ExplainPhasePage({
   const res = await fetch(`${baseUrl}/api/assess/questions/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId: session.id, code }),
+    body: JSON.stringify({ sessionId: session.id, code: combinedCode }),
     cache: "no-store",
   });
 

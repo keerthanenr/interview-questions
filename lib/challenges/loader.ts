@@ -41,9 +41,22 @@ export async function getChallengePool(): Promise<Challenge[]> {
 export async function getChallengeForSession(session: {
   metadata: Record<string, unknown>;
 }): Promise<Challenge> {
-  // MVP: use challengeId from session metadata, or default to todo-list
-  // Session 5 will add adaptive challenge selection based on performance
+  // Check if the adaptive engine has stored the current challenge
+  const metadata = session.metadata ?? {};
+  const challengeResults = metadata.challengeResults as
+    | { challengeId: string }[]
+    | undefined;
+  const currentIndex = (metadata.currentChallengeIndex as number) ?? 0;
+
+  // If we have challenge results and a current index > 0, the adaptive engine
+  // has been running — load the last decided challenge
+  if (challengeResults && challengeResults.length > 0 && currentIndex > 0) {
+    const lastResult = challengeResults[challengeResults.length - 1];
+    return getChallenge(lastResult.challengeId);
+  }
+
+  // Default: use challengeId from metadata, fall back to data-dashboard (tier 2)
   const challengeId =
-    (session.metadata?.challengeId as string) ?? "todo-list";
+    (metadata.challengeId as string) ?? "data-dashboard";
   return getChallenge(challengeId);
 }

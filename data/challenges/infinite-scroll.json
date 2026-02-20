@@ -1,0 +1,31 @@
+{
+  "id": "infinite-scroll",
+  "title": "Virtualized Infinite Scroll",
+  "tier": 4,
+  "timeLimit": 25,
+  "topics": ["performance", "intersection_observer", "pagination"],
+  "description": "<p>Build a component that displays a <strong>large list of items</strong> with infinite scroll loading and basic virtualization.</p><p>Focus on <strong>performance optimization</strong> &mdash; the list should handle 1000+ items without degradation. Use <code>IntersectionObserver</code> for scroll detection (not scroll event listeners) and implement basic virtualization to only render visible items.</p><p>A <code>generateItems(start, count)</code> helper is provided in the starter code to simulate data loading.</p>",
+  "requirements": [
+    "Render an initial set of 20 items from the mock data source using generateItems()",
+    "Automatically load 20 more items when the user scrolls near the bottom",
+    "Use IntersectionObserver for scroll detection (not scroll event listeners)",
+    "Show a loading spinner while new items are being fetched",
+    "Display at least 1000 total items without performance degradation",
+    "Basic virtualization: only render items in or near the viewport (±5 items buffer)",
+    "Items outside the viewport should be replaced with placeholder divs of the correct height",
+    "Show a count of total items loaded"
+  ],
+  "starterCode": {
+    "/App.js": "import React, { useState, useEffect, useRef, useCallback } from 'react';\n\n// Mock data generator — simulates an API call with a small delay\nfunction generateItems(start, count) {\n  return new Promise((resolve) => {\n    setTimeout(() => {\n      const items = Array.from({ length: count }, (_, i) => ({\n        id: start + i,\n        title: `Item #${start + i + 1}`,\n        description: `This is the description for item ${start + i + 1}. It contains some sample text to make each item have realistic content.`,\n        timestamp: new Date(Date.now() - (start + i) * 60000).toISOString(),\n      }));\n      resolve(items);\n    }, 500); // Simulate network delay\n  });\n}\n\nconst ITEM_HEIGHT = 80; // Fixed height per item in pixels\nconst BATCH_SIZE = 20;\n\nexport default function App() {\n  // TODO: Implement state for items, loading, etc.\n\n  // TODO: Load initial items on mount\n\n  // TODO: Set up IntersectionObserver to detect when user scrolls near bottom\n\n  // TODO: Implement virtualization — only render items in/near the viewport\n  // Hint: Track scroll position, calculate which items are visible,\n  // render only those items plus a buffer of ±5 items.\n  // Use placeholder divs with the correct total height to maintain scroll position.\n\n  return (\n    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>\n      <h1>Infinite Scroll List</h1>\n      <p style={{ color: '#888', marginBottom: '16px' }}>\n        Items loaded: 0\n      </p>\n\n      {/* Scrollable container */}\n      <div\n        style={{\n          height: '500px',\n          overflow: 'auto',\n          border: '1px solid #333',\n          borderRadius: '8px',\n        }}\n      >\n        {/* TODO: Render virtualized list items here */}\n        {/* Each item should be ITEM_HEIGHT pixels tall */}\n\n        {/* TODO: Add a sentinel element at the bottom for IntersectionObserver */}\n\n        {/* TODO: Show loading spinner when fetching more items */}\n      </div>\n    </div>\n  );\n}\n"
+  },
+  "testCases": [
+    "Renders an initial set of 20 items on mount",
+    "Scrolling near the bottom triggers loading of 20 more items",
+    "Uses IntersectionObserver (not scroll event listeners) for detection",
+    "Shows a loading spinner while fetching new items",
+    "Handles 1000+ items without visible performance issues",
+    "Only renders items near the viewport (virtualization)",
+    "Maintains correct scroll position with placeholder elements",
+    "Displays the total count of loaded items"
+  ]
+}

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 import { InviteCandidateButton } from "@/components/dashboard/invite-candidate";
+import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 
 const statusColors: Record<string, string> = {
   active: "bg-success/15 text-success border-success/30",
@@ -42,13 +43,14 @@ export default async function DashboardPage() {
       email: string;
       full_name: string | null;
       status: string;
+      token: string;
     }>;
   }> = [];
 
   if (dbUser) {
     const { data } = await supabase
       .from("assessments")
-      .select("id, title, status, created_at, candidates(id, email, full_name, status)")
+      .select("id, title, status, created_at, candidates(id, email, full_name, status, token)")
       .eq("org_id", dbUser.org_id)
       .order("created_at", { ascending: false });
 
@@ -149,6 +151,7 @@ export default async function DashboardPage() {
                       <Badge variant="outline" className={candidateStatusColors[candidate.status] ?? ""}>
                         {candidate.status.replace("_", " ")}
                       </Badge>
+                      <CopyLinkButton token={candidate.token} />
                       {candidate.status === "completed" && (
                         <Link href={`/dashboard/candidate/${candidate.id}`}>
                           <Button variant="ghost" size="sm" className="text-xs">

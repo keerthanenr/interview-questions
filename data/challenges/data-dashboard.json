@@ -3,7 +3,7 @@
   "title": "Data Fetching Dashboard",
   "tier": 2,
   "timeLimit": 20,
-  "topics": ["useEffect", "async_await", "loading_error_states", "data_transformation", "conditional_rendering"],
+  "topics": ["data_fetching", "async", "loading_states"],
   "description": "<p>Build a <strong>data dashboard</strong> that fetches user data from a remote API and displays it in a searchable, well-structured layout.</p><p>Use <code>https://jsonplaceholder.typicode.com/users</code> as your data source. This endpoint returns an array of user objects with fields like <code>name</code>, <code>email</code>, <code>company.name</code>, and <code>address.city</code>.</p><p>Your component should handle all three states gracefully: <strong>loading</strong>, <strong>error</strong>, and <strong>success</strong> with data.</p>",
   "requirements": [
     "Fetch user data from https://jsonplaceholder.typicode.com/users on mount",

@@ -16,6 +16,8 @@ interface ChallengePanelProps {
   requirements: string[];
   difficulty: 1 | 2 | 3 | 4 | 5;
   timeLimit: number;
+  challengeNumber?: number;
+  totalChallenges?: number;
 }
 
 export function ChallengePanel({
@@ -24,6 +26,8 @@ export function ChallengePanel({
   requirements,
   difficulty,
   timeLimit,
+  challengeNumber,
+  totalChallenges,
 }: ChallengePanelProps) {
   const diff = difficultyLabels[difficulty] ?? difficultyLabels[3];
 
@@ -31,6 +35,11 @@ export function ChallengePanel({
     <div className="p-4 space-y-5">
       {/* Title & metadata */}
       <div className="space-y-3">
+        {challengeNumber != null && totalChallenges != null && (
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+            Challenge {challengeNumber} of {totalChallenges}
+          </p>
+        )}
         <h3 className="font-display text-lg font-bold leading-snug">{title}</h3>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={diff.color}>

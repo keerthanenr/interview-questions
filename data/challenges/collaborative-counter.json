@@ -1,0 +1,32 @@
+{
+  "id": "collaborative-counter",
+  "title": "Real-time Collaborative Counter",
+  "tier": 5,
+  "timeLimit": 25,
+  "topics": ["state_advanced", "context", "optimistic_updates"],
+  "description": "<p>Build a <strong>counter component</strong> with complex state management that simulates real-time collaboration between multiple users.</p><p>Use <code>useReducer</code> for state management with a proper action/reducer pattern. Implement <strong>optimistic updates</strong> with simulated network delays, rollback on failure, and an action history log.</p><p>Use <strong>React Context</strong> to share counter state across multiple sub-components. A custom hook stub for simulating remote users is provided.</p>",
+  "requirements": [
+    "A counter display showing the current value",
+    "Increment and decrement buttons for the local user",
+    "Use useReducer for state management (not useState) with a proper action/reducer pattern",
+    "Implement an action history log showing all changes with timestamps and which user made them",
+    "Simulate 2 remote users who randomly increment/decrement every 3-5 seconds (use setInterval)",
+    "Optimistic updates: local clicks update immediately, then confirm after a simulated 500ms delay. If the server rejects (10% random failure rate), roll back and show an error toast",
+    "Use React Context to share counter state across sub-components (counter display, action log, user status panel)",
+    "Show an undo last action button that reverts the most recent local change"
+  ],
+  "starterCode": {
+    "/App.js": "import React, { useReducer, useContext, createContext, useEffect, useCallback, useRef } from 'react';\n\n// ─── Counter Context ──────────────────────────────────────────\n// TODO: Create a CounterContext to share state across components\n\n// ─── Reducer ──────────────────────────────────────────────────\n// TODO: Define action types and implement counterReducer\n// Actions should include: INCREMENT, DECREMENT, UNDO, CONFIRM, ROLLBACK, REMOTE_UPDATE\n// State shape: { count, history, pendingActions, users }\n\nconst initialState = {\n  count: 0,\n  history: [], // { id, user, action, timestamp, status: 'confirmed' | 'pending' | 'rolled_back' }\n  pendingActions: [], // optimistic updates awaiting confirmation\n};\n\n// ─── Simulated Server ─────────────────────────────────────────\n// Simulates a network request with 500ms delay and 10% failure rate\nfunction simulateServerRequest(action) {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      if (Math.random() < 0.1) {\n        reject(new Error('Server rejected the update'));\n      } else {\n        resolve({ success: true });\n      }\n    }, 500);\n  });\n}\n\n// ─── Custom Hook: useRemoteUsers ──────────────────────────────\n// TODO: Implement this hook to simulate 2 remote users\n// Each remote user should randomly increment or decrement every 3-5 seconds\nfunction useRemoteUsers(dispatch) {\n  // Hint: Use setInterval with a random delay between 3000-5000ms\n  // Dispatch REMOTE_UPDATE actions with user names like 'Alice' and 'Bob'\n}\n\n// ─── Sub-components ───────────────────────────────────────────\n\nfunction CounterDisplay() {\n  // TODO: Read count from context and display it\n  return (\n    <div style={{ textAlign: 'center', padding: '24px' }}>\n      <h2 style={{ fontSize: '48px', fontWeight: 'bold' }}>0</h2>\n      <p style={{ color: '#888' }}>Current Count</p>\n    </div>\n  );\n}\n\nfunction ActionButtons() {\n  // TODO: Implement increment, decrement, and undo buttons\n  // Increment/decrement should use optimistic updates via simulateServerRequest\n  return (\n    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '16px' }}>\n      <button style={{ padding: '8px 24px', fontSize: '18px' }}>-</button>\n      <button style={{ padding: '8px 24px', fontSize: '18px' }}>+</button>\n      <button style={{ padding: '8px 16px', fontSize: '14px', opacity: 0.7 }}>Undo</button>\n    </div>\n  );\n}\n\nfunction ActionLog() {\n  // TODO: Display the history of all actions with timestamps and user info\n  return (\n    <div style={{ maxHeight: '200px', overflow: 'auto', padding: '16px' }}>\n      <h3>Action History</h3>\n      <p style={{ color: '#888', fontSize: '14px' }}>No actions yet...</p>\n    </div>\n  );\n}\n\nfunction UserStatusPanel() {\n  // TODO: Show status of all users (local + 2 remote)\n  return (\n    <div style={{ padding: '16px' }}>\n      <h3>Active Users</h3>\n      <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>\n        <span style={{ padding: '4px 8px', background: '#1e2130', borderRadius: '4px', fontSize: '14px' }}>You (local)</span>\n        <span style={{ padding: '4px 8px', background: '#1e2130', borderRadius: '4px', fontSize: '14px' }}>Alice</span>\n        <span style={{ padding: '4px 8px', background: '#1e2130', borderRadius: '4px', fontSize: '14px' }}>Bob</span>\n      </div>\n    </div>\n  );\n}\n\n// ─── Main App ─────────────────────────────────────────────────\nexport default function App() {\n  // TODO: Set up useReducer with counterReducer and initialState\n  // TODO: Wrap everything in CounterContext.Provider\n  // TODO: Call useRemoteUsers to start simulated collaborators\n\n  return (\n    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>\n      <h1>Collaborative Counter</h1>\n      <div style={{ border: '1px solid #333', borderRadius: '12px', overflow: 'hidden' }}>\n        <CounterDisplay />\n        <div style={{ borderTop: '1px solid #333' }}>\n          <ActionButtons />\n        </div>\n        <div style={{ borderTop: '1px solid #333' }}>\n          <UserStatusPanel />\n        </div>\n        <div style={{ borderTop: '1px solid #333' }}>\n          <ActionLog />\n        </div>\n      </div>\n    </div>\n  );\n}\n"
+  },
+  "testCases": [
+    "Renders a counter display showing the current value",
+    "Increment and decrement buttons modify the counter",
+    "Uses useReducer (not useState) for state management",
+    "Action history log shows all changes with timestamps and user names",
+    "Two simulated remote users make random changes every 3-5 seconds",
+    "Local updates appear immediately (optimistic) and confirm after 500ms",
+    "Failed server updates (10% rate) are rolled back with an error indication",
+    "Undo button reverts the most recent local action",
+    "React Context shares state across CounterDisplay, ActionLog, and UserStatusPanel"
+  ]
+}
