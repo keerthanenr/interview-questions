@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { generateToken } from "@/lib/utils";
+import { generateToken, getBaseUrl } from "@/lib/utils";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const appUrl = getBaseUrl();
     const assessmentLink = `${appUrl}/assess/${token}`;
 
     return Response.json({ candidate, assessmentLink });

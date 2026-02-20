@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getStripe, PLANS, type PlanId } from "@/lib/stripe/config";
+import { getBaseUrl } from "@/lib/utils";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
 
-    const origin = request.headers.get("origin") ?? "http://localhost:3000";
+    const origin = getBaseUrl(request.headers.get("origin"));
 
     const checkoutSession = await getStripe().checkout.sessions.create({
       mode: "subscription",

@@ -60,9 +60,8 @@ export default async function ExplainPhasePage({
   }
 
   // Call the question generation API — it now handles multi-challenge internally
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+  const { getBaseUrl } = await import("@/lib/utils");
+  const baseUrl = getBaseUrl();
 
   const res = await fetch(`${baseUrl}/api/assess/questions/generate`, {
     method: "POST",

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { getBaseUrl } from "@/lib/utils";
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient();
@@ -95,19 +95,7 @@ export async function signUpWithEmail(formData: FormData) {
 export async function signInWithGoogle() {
   const supabase = await createClient();
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
-
-  let baseUrl: string;
-  if (siteUrl) {
-    baseUrl = siteUrl;
-  } else {
-    const headersList = await headers();
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
-    const protocol = host.startsWith("localhost") ? "http" : "https";
-    baseUrl = `${protocol}://${host}`;
-  }
+  const baseUrl = getBaseUrl();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

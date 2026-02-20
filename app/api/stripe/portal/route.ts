@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/config";
+import { getBaseUrl } from "@/lib/utils";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const origin = request.headers.get("origin") ?? "http://localhost:3000";
+    const origin = getBaseUrl(request.headers.get("origin"));
 
     const portalSession = await getStripe().billingPortal.sessions.create({
       customer: org.stripe_customer_id,
