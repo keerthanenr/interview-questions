@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  SandpackProvider,
   SandpackCodeEditor,
-  SandpackPreview,
   SandpackConsole,
+  SandpackPreview,
+  SandpackProvider,
   useSandpack,
 } from "@codesandbox/sandpack-react";
-import { ClaudeChatPanel } from "./ClaudeChatPanel";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { ClaudeChatPanel } from "./ClaudeChatPanel";
 
 const DEFAULT_STARTER_CODE: Record<string, string> = {
   "/App.js": `import React from 'react';
@@ -96,7 +96,7 @@ function CodeChangeTracker({
         lastLoggedSnapshot.current = { ...currentFiles };
       }, 10_000);
     },
-    [sessionId, lastClaudeCode, lastClaudeCodeTime],
+    [sessionId, lastClaudeCode, lastClaudeCodeTime]
   );
 
   const checkForChanges = useCallback(() => {
@@ -190,7 +190,7 @@ function TerminalPanel() {
       return;
     } else if (base === "ls") {
       const files = Object.keys(sandpack.files).map((f) =>
-        f.startsWith("/") ? f.slice(1) : f,
+        f.startsWith("/") ? f.slice(1) : f
       );
       newHistory.push({ type: "output", text: files.join("\n") });
     } else if (base === "cat" && parts[1]) {
@@ -248,20 +248,20 @@ function TerminalPanel() {
 
   return (
     <div
-      className="h-full flex flex-col bg-[#0d1117] font-mono text-xs"
+      className="flex h-full flex-col bg-[#0d1117] font-mono text-xs"
       onClick={() => inputRef.current?.focus()}
       onKeyDown={() => {}}
     >
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-0.5">
+      <div className="flex-1 space-y-0.5 overflow-y-auto p-3" ref={scrollRef}>
         {history.map((line, i) => (
           <div
-            key={`${line.type}-${i}`}
             className={cn(
               "whitespace-pre-wrap leading-relaxed",
               line.type === "input" && "text-foreground",
               line.type === "output" && "text-muted-foreground",
-              line.type === "error" && "text-destructive",
+              line.type === "error" && "text-destructive"
             )}
+            key={`${line.type}-${i}`}
           >
             {line.text}
           </div>
@@ -269,15 +269,15 @@ function TerminalPanel() {
         <div className="flex items-center gap-1.5">
           <span className="text-success">$</span>
           <input
-            ref={inputRef}
-            value={input}
+            autoComplete="off"
+            className="flex-1 bg-transparent text-foreground caret-success outline-none"
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") runCommand(input);
             }}
-            className="flex-1 bg-transparent outline-none text-foreground caret-success"
+            ref={inputRef}
             spellCheck={false}
-            autoComplete="off"
+            value={input}
           />
         </div>
       </div>
@@ -306,8 +306,18 @@ function EditorInner({
       key: "terminal",
       label: "Terminal",
       icon: (
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -315,8 +325,18 @@ function EditorInner({
       key: "console",
       label: "Console",
       icon: (
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -324,18 +344,28 @@ function EditorInner({
       key: "claude",
       label: "Claude AI",
       icon: (
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
   ];
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {/* Top: Editor (left) + Preview (right) side by side */}
-      <div className="flex-[60] min-h-0 flex overflow-hidden">
-        <div className="flex-1 min-w-0 overflow-hidden">
+      <div className="flex min-h-0 flex-[60] overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <SandpackCodeEditor
             showLineNumbers
             showTabs
@@ -343,7 +373,7 @@ function EditorInner({
             wrapContent
           />
         </div>
-        <div className="flex-1 min-w-0 overflow-hidden border-l border-border">
+        <div className="min-w-0 flex-1 overflow-hidden border-border border-l">
           <SandpackPreview
             showOpenInCodeSandbox={false}
             showRefreshButton
@@ -353,18 +383,18 @@ function EditorInner({
       </div>
 
       {/* Bottom tabs bar */}
-      <div className="flex-shrink-0 border-t border-border bg-card/60 flex items-center gap-0.5 px-2 h-8">
+      <div className="flex h-8 flex-shrink-0 items-center gap-0.5 border-border border-t bg-card/60 px-2">
         {tabs.map((tab) => (
           <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-t transition-colors",
+              "flex items-center gap-1.5 rounded-t px-3 py-1 font-medium text-xs transition-colors",
               activeTab === tab.key
-                ? "text-primary bg-background border-t border-x border-primary/30 -mb-px"
-                : "text-muted-foreground hover:text-foreground",
+                ? "-mb-px border-primary/30 border-x border-t bg-background text-primary"
+                : "text-muted-foreground hover:text-foreground"
             )}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            type="button"
           >
             {tab.icon}
             {tab.label}
@@ -373,27 +403,30 @@ function EditorInner({
       </div>
 
       {/* Bottom panel content */}
-      <div className="flex-[40] min-h-0 overflow-hidden border-t border-border">
+      <div className="min-h-0 flex-[40] overflow-hidden border-border border-t">
         <div className={cn("h-full", activeTab !== "terminal" && "hidden")}>
           <TerminalPanel />
         </div>
         <div className={cn("h-full", activeTab !== "console" && "hidden")}>
           <SandpackConsole
-            style={{ height: "100%" }}
-            showSyntaxError
             showHeader={false}
+            showSyntaxError
+            style={{ height: "100%" }}
           />
         </div>
         <div className={cn("h-full", activeTab !== "claude" && "hidden")}>
-          <ClaudeChatPanel sessionId={sessionId} onClaudeCode={handleClaudeCode} />
+          <ClaudeChatPanel
+            onClaudeCode={handleClaudeCode}
+            sessionId={sessionId}
+          />
         </div>
       </div>
 
       <CodeChangeTracker
-        onCodeChange={onCodeChange}
-        sessionId={sessionId}
         lastClaudeCode={lastClaudeCodeRef.current}
         lastClaudeCodeTime={lastClaudeCodeTimeRef.current}
+        onCodeChange={onCodeChange}
+        sessionId={sessionId}
       />
     </div>
   );
@@ -408,13 +441,13 @@ export function CodeEditorPanel({
 
   return (
     <SandpackProvider
-      template="react"
       files={files}
-      theme="dark"
       options={{
         autorun: true,
         autoReload: true,
       }}
+      template="react"
+      theme="dark"
     >
       <EditorInner onCodeChange={onCodeChange} sessionId={sessionId} />
     </SandpackProvider>

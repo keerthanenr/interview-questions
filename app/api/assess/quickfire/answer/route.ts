@@ -1,6 +1,6 @@
+import type { NextRequest } from "next/server";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || questionIndex === undefined) {
       return Response.json(
         { error: "sessionId and questionIndex are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
 
     const metadata = (session?.metadata as Record<string, unknown>) ?? {};
     const questions = (metadata.questions as unknown[]) ?? [];
-    const question = (questions[questionIndex] as Record<string, unknown>) ?? {};
+    const question =
+      (questions[questionIndex] as Record<string, unknown>) ?? {};
 
     const { error } = await supabase.from("quickfire_responses").insert({
       session_id: sessionId,
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return Response.json(
         { error: "Failed to save response" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

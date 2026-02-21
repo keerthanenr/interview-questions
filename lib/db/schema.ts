@@ -1,12 +1,12 @@
 import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  jsonb,
-  integer,
   boolean,
   index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 // ─── organizations ──────────────────────────────────────────────────
@@ -114,9 +114,15 @@ export const events = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
   (table) => ({
-    sessionTimeIdx: index("idx_events_session_time").on(table.sessionId, table.createdAt),
-    sessionTypeIdx: index("idx_events_session_type").on(table.sessionId, table.eventType),
-  }),
+    sessionTimeIdx: index("idx_events_session_time").on(
+      table.sessionId,
+      table.createdAt
+    ),
+    sessionTypeIdx: index("idx_events_session_type").on(
+      table.sessionId,
+      table.eventType
+    ),
+  })
 );
 
 // ─── submissions ────────────────────────────────────────────────────

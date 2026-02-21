@@ -4,12 +4,12 @@
  */
 export function quickAIRelianceScore(
   events: { event_type: string; payload: Record<string, unknown> }[],
-  finalCode: string,
+  finalCode: string
 ): number {
   if (!finalCode || finalCode.trim().length === 0) return 0;
 
   const acceptedEvents = events.filter(
-    (e) => e.event_type === "claude_output_accepted",
+    (e) => e.event_type === "claude_output_accepted"
   );
 
   if (acceptedEvents.length === 0) return 0;

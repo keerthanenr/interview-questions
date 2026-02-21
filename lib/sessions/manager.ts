@@ -1,13 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type {
-  Session,
-  Candidate,
-  Assessment,
-} from "@/lib/supabase/types";
+import type { Assessment, Candidate, Session } from "@/lib/supabase/types";
 
-export async function startSession(
-  candidateToken: string,
-): Promise<Session> {
+export async function startSession(candidateToken: string): Promise<Session> {
   const supabase = createAdminClient();
 
   const { data: candidate, error: candidateErr } = await supabase
@@ -71,9 +65,7 @@ export async function startSession(
   return session as Session;
 }
 
-export async function getSessionWithCandidate(
-  token: string,
-): Promise<{
+export async function getSessionWithCandidate(token: string): Promise<{
   session: Session;
   candidate: Candidate;
   assessment: Assessment;

@@ -1,0 +1,20 @@
+{
+  "name": "reactassess-sandbox",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Cloudflare Sandbox Worker for ReactAssess Build phase",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "types": "wrangler types",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/sandbox": "*",
+    "@types/node": "^22.8.6",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.63.0"
+  }
+}

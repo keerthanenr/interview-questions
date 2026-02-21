@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({
   children,

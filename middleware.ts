@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
           }
         },
       },
-    },
+    }
   );
 
   // Refresh the auth session on every request

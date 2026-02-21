@@ -1,7 +1,7 @@
-import { getStripe, PLANS } from "@/lib/stripe/config";
-import { createAdminClient } from "@/lib/supabase/admin";
 import type { NextRequest } from "next/server";
 import type Stripe from "stripe";
+import { getStripe, PLANS } from "@/lib/stripe/config";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Map a Stripe price ID back to the plan name. */
 function planFromPriceId(priceId: string): string | null {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   if (!sig) {
     return Response.json(
       { error: "Missing stripe-signature header" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
     event = getStripe().webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return Response.json(
       { error: `Webhook signature verification failed: ${message}` },
-      { status: 400 },
+      { status: 400 }
     );
   }
 

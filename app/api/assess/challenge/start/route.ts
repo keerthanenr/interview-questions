@@ -1,5 +1,5 @@
-import { logEvent } from "@/lib/events/logger";
 import type { NextRequest } from "next/server";
+import { logEvent } from "@/lib/events/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !challengeId) {
       return Response.json(
         { error: "sessionId and challengeId are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 

@@ -1,6 +1,6 @@
+import type { NextRequest } from "next/server";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !fromPhase || !toPhase) {
       return Response.json(
         { error: "sessionId, fromPhase, and toPhase are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (error || !session) {
       return Response.json(
         { error: "Failed to update session" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

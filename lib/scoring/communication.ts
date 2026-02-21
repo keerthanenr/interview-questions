@@ -17,7 +17,7 @@ interface CommunicationScore {
  * constructiveness, and specificity. All scores are on a 1–10 scale.
  */
 export function calculateCommunicationScore(
-  reviewComments: ReviewComment[],
+  reviewComments: ReviewComment[]
 ): CommunicationScore {
   if (reviewComments.length === 0) {
     return { overall: 1, clarity: 1, constructiveness: 1, specificity: 1 };
@@ -120,8 +120,8 @@ const SPECIFICITY_PATTERNS = [
   /\buseMemo\b/,
   /\buseCallback\b/,
   /\buseRef\b/,
-  /`[^`]+`/,                    // backtick-wrapped identifiers
-  /\b[a-z]+[A-Z][a-zA-Z]*\b/,  // camelCase tokens
+  /`[^`]+`/, // backtick-wrapped identifiers
+  /\b[a-z]+[A-Z][a-zA-Z]*\b/, // camelCase tokens
 ];
 
 function scoreSpecificity(comments: ReviewComment[]): number {

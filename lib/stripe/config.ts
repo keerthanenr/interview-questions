@@ -47,7 +47,7 @@ export const PLANS = {
     priceId: "",
     price: -1,
     currency: "gbp",
-    assessmentsPerMonth: Infinity,
+    assessmentsPerMonth: Number.POSITIVE_INFINITY,
     features: [
       "Unlimited assessments",
       "Everything in Professional",

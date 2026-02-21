@@ -1,6 +1,6 @@
+import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateToken, getBaseUrl } from "@/lib/utils";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     if (!assessmentId || !email?.trim()) {
       return Response.json(
         { error: "assessmentId and email are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return Response.json(
         { error: "Failed to invite candidate" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

@@ -23,7 +23,7 @@ interface CollaborationScore {
  * (1–5), and an independence ratio breakdown.
  */
 export function calculateCollaborationScore(
-  events: CollaborationEvent[],
+  events: CollaborationEvent[]
 ): CollaborationScore {
   return {
     promptQuality: scorePromptQuality(events),
@@ -95,12 +95,12 @@ function scorePromptQuality(events: CollaborationEvent[]): number {
  */
 function scoreVerification(events: CollaborationEvent[]): number {
   const acceptances = events.filter(
-    (e) => e.event_type === "claude_output_accepted",
+    (e) => e.event_type === "claude_output_accepted"
   );
   if (acceptances.length === 0) return 3; // neutral when no data
 
   const modifiedCount = acceptances.filter(
-    (e) => e.payload.modified === true,
+    (e) => e.payload.modified === true
   ).length;
   const verbatimCount = acceptances.length - modifiedCount;
 
@@ -127,15 +127,15 @@ function scoreVerification(events: CollaborationEvent[]): number {
  * Returns percentages (0–1) that sum to 1.
  */
 function computeIndependenceRatio(
-  events: CollaborationEvent[],
+  events: CollaborationEvent[]
 ): IndependenceRatio {
   const codeChanges = events.filter((e) => e.event_type === "code_change");
   const acceptances = events.filter(
-    (e) => e.event_type === "claude_output_accepted",
+    (e) => e.event_type === "claude_output_accepted"
   );
 
   const modifiedCount = acceptances.filter(
-    (e) => e.payload.modified === true,
+    (e) => e.payload.modified === true
   ).length;
   const verbatimCount = acceptances.length - modifiedCount;
 

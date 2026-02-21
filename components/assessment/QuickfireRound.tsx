@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { QuickfireQuestion } from "@/lib/claude/client";
 
@@ -34,7 +34,10 @@ export function QuickfireRound({
   >("none");
   const [showTimesUp, setShowTimesUp] = useState(false);
   const [answers, setAnswers] = useState<
-    Record<number, { response: string; isCorrect: boolean | null; timeMs: number }>
+    Record<
+      number,
+      { response: string; isCorrect: boolean | null; timeMs: number }
+    >
   >({});
   const [isAdvancing, setIsAdvancing] = useState(false);
 
@@ -129,11 +132,7 @@ export function QuickfireRound({
   // Cmd+Enter for text submission
   useEffect(() => {
     if (roundState !== "QUESTION_ACTIVE") return;
-    if (
-      !currentQuestion ||
-      currentQuestion.type === "multiple_choice"
-    )
-      return;
+    if (!currentQuestion || currentQuestion.type === "multiple_choice") return;
 
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -175,7 +174,7 @@ export function QuickfireRound({
         }),
       }).catch(() => {});
     },
-    [currentIndex, sessionId],
+    [currentIndex, sessionId]
   );
 
   const advanceToNext = useCallback(() => {
@@ -211,7 +210,7 @@ export function QuickfireRound({
 
       advanceToNext();
     },
-    [currentQuestion, saveAnswer, advanceToNext],
+    [currentQuestion, saveAnswer, advanceToNext]
   );
 
   const handleMCSelect = useCallback(
@@ -231,7 +230,7 @@ export function QuickfireRound({
         advanceToNext();
       }, 200);
     },
-    [currentQuestion, saveAnswer, advanceToNext],
+    [currentQuestion, saveAnswer, advanceToNext]
   );
 
   const handleTextSubmit = useCallback(() => {
@@ -264,54 +263,52 @@ export function QuickfireRound({
 
   // Calculate MC accuracy for the complete screen
   const mcQuestions = questions.filter((q) => q.type === "multiple_choice");
-  const mcCorrect = mcQuestions.filter(
-    (_, i) => {
-      const qIdx = questions.indexOf(mcQuestions[i]);
-      return answers[qIdx]?.isCorrect === true;
-    },
-  ).length;
+  const mcCorrect = mcQuestions.filter((_, i) => {
+    const qIdx = questions.indexOf(mcQuestions[i]);
+    return answers[qIdx]?.isCorrect === true;
+  }).length;
 
   // INTRO screen
   if (roundState === "INTRO") {
     return (
-      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
-        <div className="w-full max-w-lg text-center animate-slide-up">
-          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
+      <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
+        <div className="w-full max-w-lg animate-slide-up text-center">
+          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
             <svg
-              className="w-10 h-10 text-primary"
+              className="h-10 w-10 text-primary"
               fill="none"
-              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={1.5}
+              viewBox="0 0 24 24"
             >
               <path
+                d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
               />
             </svg>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 font-display">
+          <h1 className="mb-3 font-bold font-display text-3xl tracking-tight sm:text-4xl">
             Quickfire Round
           </h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8">
+          <p className="mx-auto mb-8 max-w-md text-muted-foreground text-sm">
             You&apos;ll answer {questions.length} questions about the code you
             just wrote. Each question is timed — answer as quickly and
             accurately as you can.
           </p>
 
-          <div className="glass-card rounded-xl p-6 mb-8 inline-block">
-            <div className="text-6xl font-bold font-display text-primary tabular-nums">
+          <div className="glass-card mb-8 inline-block rounded-xl p-6">
+            <div className="font-bold font-display text-6xl text-primary tabular-nums">
               {introCountdown <= 3 ? introCountdown : ""}
             </div>
             {introCountdown > 3 && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Starting in {introCountdown}s...
               </p>
             )}
             {introCountdown <= 3 && introCountdown > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">Get ready</p>
+              <p className="mt-1 text-muted-foreground text-xs">Get ready</p>
             )}
           </div>
         </div>
@@ -322,23 +319,23 @@ export function QuickfireRound({
   // QUESTION TRANSITION screen
   if (roundState === "QUESTION_TRANSITION") {
     return (
-      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
-        <div className="text-center animate-scale-in">
-          <p className="text-muted-foreground text-sm mb-2">Next up</p>
-          <h2 className="text-2xl font-bold font-display">
+      <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
+        <div className="animate-scale-in text-center">
+          <p className="mb-2 text-muted-foreground text-sm">Next up</p>
+          <h2 className="font-bold font-display text-2xl">
             Question {currentIndex + 2} of {questions.length}
           </h2>
-          <div className="flex justify-center gap-1.5 mt-4">
+          <div className="mt-4 flex justify-center gap-1.5">
             {questions.map((_, i) => (
               <div
-                key={i}
-                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
                   i <= currentIndex
                     ? "bg-primary"
                     : i === currentIndex + 1
                       ? "bg-primary/50"
                       : "bg-muted"
                 }`}
+                key={i}
               />
             ))}
           </div>
@@ -350,60 +347,60 @@ export function QuickfireRound({
   // ROUND COMPLETE screen
   if (roundState === "ROUND_COMPLETE") {
     return (
-      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
-        <div className="w-full max-w-lg text-center animate-slide-up">
-          <div className="w-20 h-20 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-8">
+      <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
+        <div className="w-full max-w-lg animate-slide-up text-center">
+          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-success/10">
             <svg
-              className="w-10 h-10 text-success"
+              className="h-10 w-10 text-success"
               fill="none"
-              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={1.5}
+              viewBox="0 0 24 24"
             >
               <path
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 font-display">
+          <h1 className="mb-3 font-bold font-display text-3xl tracking-tight sm:text-4xl">
             Quickfire Complete!
           </h1>
 
-          <div className="glass-card rounded-xl p-6 mb-8">
-            <p className="text-sm text-muted-foreground mb-2">
+          <div className="glass-card mb-8 rounded-xl p-6">
+            <p className="mb-2 text-muted-foreground text-sm">
               Multiple Choice Accuracy
             </p>
-            <p className="text-3xl font-bold font-display">
+            <p className="font-bold font-display text-3xl">
               {mcCorrect}
-              <span className="text-muted-foreground text-lg">
+              <span className="text-lg text-muted-foreground">
                 /{mcQuestions.length}
               </span>
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="mt-2 text-muted-foreground text-xs">
               Free-text responses will be reviewed separately
             </p>
           </div>
 
           <button
-            type="button"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
             onClick={handleContinueToReview}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors"
+            type="button"
           >
             Continue to Code Review
             <svg
-              className="w-4 h-4"
+              className="h-4 w-4"
               fill="none"
-              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
+              viewBox="0 0 24 24"
             >
               <path
+                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
               />
             </svg>
           </button>
@@ -416,8 +413,7 @@ export function QuickfireRound({
   if (!currentQuestion) return null;
 
   const isMC = currentQuestion.type === "multiple_choice";
-  const timerPercent =
-    (timeRemaining / currentQuestion.timeLimitSeconds) * 100;
+  const timerPercent = (timeRemaining / currentQuestion.timeLimitSeconds) * 100;
   const timerUrgent = timeRemaining <= 3;
 
   const typeLabels: Record<string, string> = {
@@ -434,27 +430,27 @@ export function QuickfireRound({
   };
 
   return (
-    <main className="mesh-gradient min-h-dvh flex flex-col relative">
+    <main className="mesh-gradient relative flex min-h-dvh flex-col">
       {/* Time's up overlay */}
       {showTimesUp && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-scale-in">
+        <div className="absolute inset-0 z-50 flex animate-scale-in items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-destructive/15 flex items-center justify-center mx-auto mb-4">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/15">
               <svg
-                className="w-8 h-8 text-destructive"
+                className="h-8 w-8 text-destructive"
                 fill="none"
-                viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
+                viewBox="0 0 24 24"
               >
                 <path
+                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold font-display text-destructive">
+            <h2 className="font-bold font-display text-2xl text-destructive">
               Time&apos;s Up!
             </h2>
           </div>
@@ -462,27 +458,25 @@ export function QuickfireRound({
       )}
 
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm px-6 py-3">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
+      <div className="border-border border-b bg-card/50 px-6 py-3 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">
+            <span className="font-medium text-sm">
               Question {currentIndex + 1}/{questions.length}
             </span>
-            <Badge variant="outline" className="text-xs">
+            <Badge className="text-xs" variant="outline">
               {typeLabels[currentQuestion.type]}
             </Badge>
             <Badge
+              className={difficultyColors[currentQuestion.difficulty] ?? ""}
               variant="outline"
-              className={
-                difficultyColors[currentQuestion.difficulty] ?? ""
-              }
             >
               Lvl {currentQuestion.difficulty}
             </Badge>
           </div>
           <div className="flex items-center gap-3">
             <span
-              className={`text-sm font-mono font-bold tabular-nums ${
+              className={`font-bold font-mono text-sm tabular-nums ${
                 timerUrgent ? "text-destructive" : "text-foreground"
               }`}
             >
@@ -492,8 +486,8 @@ export function QuickfireRound({
         </div>
 
         {/* Timer bar */}
-        <div className="max-w-3xl mx-auto mt-2">
-          <div className="h-1 bg-muted rounded-full overflow-hidden">
+        <div className="mx-auto mt-2 max-w-3xl">
+          <div className="h-1 overflow-hidden rounded-full bg-muted">
             <div
               className={`h-full rounded-full transition-all duration-100 ease-linear ${
                 timerUrgent ? "bg-destructive" : "bg-primary"
@@ -505,17 +499,17 @@ export function QuickfireRound({
       </div>
 
       {/* Question content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      <div className="flex flex-1 items-center justify-center px-4 py-8">
         <div className="w-full max-w-3xl animate-scale-in">
           {/* Question text */}
-          <h2 className="text-xl sm:text-2xl font-semibold leading-snug mb-6">
+          <h2 className="mb-6 font-semibold text-xl leading-snug sm:text-2xl">
             {currentQuestion.question}
           </h2>
 
           {/* Code reference */}
           {currentQuestion.codeReference && (
-            <div className="glass-card rounded-lg p-4 mb-6 overflow-x-auto">
-              <pre className="text-sm font-mono text-foreground/90 whitespace-pre-wrap">
+            <div className="glass-card mb-6 overflow-x-auto rounded-lg p-4">
+              <pre className="whitespace-pre-wrap font-mono text-foreground/90 text-sm">
                 {currentQuestion.codeReference}
               </pre>
             </div>
@@ -523,14 +517,13 @@ export function QuickfireRound({
 
           {/* MC options */}
           {isMC && currentQuestion.options && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {(["a", "b", "c", "d"] as const).map((key, idx) => {
                 const option = currentQuestion.options?.[key];
                 if (!option) return null;
 
                 const isSelected = selectedAnswer === key;
-                const isCorrectAnswer =
-                  key === currentQuestion.correctAnswer;
+                const isCorrectAnswer = key === currentQuestion.correctAnswer;
 
                 let bgClass = "glass-card hover:bg-secondary/80";
                 if (flashState !== "none" && isSelected) {
@@ -544,13 +537,13 @@ export function QuickfireRound({
 
                 return (
                   <button
-                    key={key}
-                    type="button"
-                    onClick={() => handleMCSelect(key)}
+                    className={`${bgClass} flex items-start gap-3 rounded-xl border border-border p-4 text-left transition-all`}
                     disabled={submittedRef.current}
-                    className={`${bgClass} rounded-xl p-4 text-left transition-all border border-border flex items-start gap-3`}
+                    key={key}
+                    onClick={() => handleMCSelect(key)}
+                    type="button"
                   >
-                    <span className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-muted font-bold text-xs">
                       {idx + 1}
                     </span>
                     <span className="text-sm leading-relaxed">{option}</span>
@@ -564,27 +557,25 @@ export function QuickfireRound({
           {!isMC && (
             <div className="space-y-3">
               <textarea
-                value={textAnswer}
+                autoFocus
+                className="min-h-[120px] w-full resize-none rounded-xl border border-border bg-input p-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 onChange={(e) => setTextAnswer(e.target.value)}
                 placeholder="Type your answer here..."
-                className="w-full min-h-[120px] bg-input border border-border rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-                autoFocus
+                value={textAnswer}
               />
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {textAnswer.length} characters
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {navigator.platform?.includes("Mac")
-                      ? "\u2318"
-                      : "Ctrl"}
+                  <span className="text-muted-foreground text-xs">
+                    {navigator.platform?.includes("Mac") ? "\u2318" : "Ctrl"}
                     +Enter to submit
                   </span>
                   <button
-                    type="button"
+                    className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
                     onClick={handleTextSubmit}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    type="button"
                   >
                     Submit
                   </button>
@@ -595,7 +586,7 @@ export function QuickfireRound({
 
           {/* Keyboard hint for MC */}
           {isMC && (
-            <p className="text-xs text-muted-foreground mt-4 text-center">
+            <p className="mt-4 text-center text-muted-foreground text-xs">
               Press 1-4 or A-D to select an answer
             </p>
           )}

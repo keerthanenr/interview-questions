@@ -1,22 +1,19 @@
+import type { NextRequest } from "next/server";
 import { generateQuestions } from "@/lib/claude/client";
 import {
-  QUESTION_GENERATION_PROMPT,
   MULTI_CHALLENGE_QUESTION_PREFIX,
+  QUESTION_GENERATION_PROMPT,
 } from "@/lib/claude/prompts";
+import { loadFallbackQuestions } from "@/lib/data/loaders";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { loadFallbackQuestions } from "@/lib/data/loaders";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { sessionId, code } = await request.json();
 
     if (!sessionId) {
-      return Response.json(
-        { error: "sessionId is required" },
-        { status: 400 },
-      );
+      return Response.json({ error: "sessionId is required" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -47,7 +44,8 @@ export async function POST(request: NextRequest) {
     if (submissions && submissions.length > 0) {
       const codeBlocks = submissions.map((s, i) => {
         const meta = (s.metadata as Record<string, unknown>) ?? {};
-        const challengeId = (meta.challenge_id as string) ?? `challenge-${i + 1}`;
+        const challengeId =
+          (meta.challenge_id as string) ?? `challenge-${i + 1}`;
         return `// ─── Challenge: ${challengeId} ───\n${s.code ?? ""}`;
       });
       combinedCode = codeBlocks.join("\n\n");
@@ -56,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (!combinedCode.trim()) {
       return Response.json(
         { error: "No code submissions found" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 

@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import { PLANS } from "@/lib/stripe/config";
-import { checkAssessmentLimit } from "@/lib/billing/limits";
 import { BillingClient } from "@/components/dashboard/billing-client";
+import { checkAssessmentLimit } from "@/lib/billing/limits";
+import { PLANS } from "@/lib/stripe/config";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function BillingPage() {
   const supabase = await createClient();
@@ -33,20 +33,23 @@ export default async function BillingPage() {
   const usage = await checkAssessmentLimit(dbUser.org_id);
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl">
+    <div className="max-w-5xl p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Billing</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="mb-1 font-bold text-2xl">Billing</h1>
+        <p className="text-muted-foreground text-sm">
           Manage your subscription and monitor usage for{" "}
-          <span className="text-foreground font-medium">{org?.name ?? "your organization"}</span>.
+          <span className="font-medium text-foreground">
+            {org?.name ?? "your organization"}
+          </span>
+          .
         </p>
       </div>
 
       <BillingClient
         currentPlan={currentPlan}
         hasStripeCustomer={hasStripeCustomer}
-        usage={usage}
         plans={PLANS}
+        usage={usage}
       />
     </div>
   );

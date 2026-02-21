@@ -1,6 +1,6 @@
+import { redirect } from "next/navigation";
 import { APP_NAME } from "@/lib/constants";
 import { getSessionWithCandidate } from "@/lib/sessions/manager";
-import { redirect } from "next/navigation";
 
 const phases = [
   { label: "Build", description: "Coded a React challenge" },
@@ -26,60 +26,60 @@ export default async function CompletePage({
   }
 
   return (
-    <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
-      <div className="w-full max-w-lg text-center animate-slide-up">
-        <div className="w-20 h-20 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-8">
+    <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
+      <div className="w-full max-w-lg animate-slide-up text-center">
+        <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-success/10">
           <svg
-            className="w-10 h-10 text-success"
+            className="h-10 w-10 text-success"
             fill="none"
-            viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={1.5}
+            viewBox="0 0 24 24"
           >
             <path
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 font-display">
+        <h1 className="mb-3 font-bold font-display text-3xl tracking-tight sm:text-4xl">
           Assessment Complete &mdash; Thank You!
         </h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8">
+        <p className="mx-auto mb-8 max-w-md text-muted-foreground text-sm">
           Your results have been submitted and are being reviewed by the hiring
           team. Great work making it through all three phases!
         </p>
 
         {/* Completed phases */}
-        <div className="glass-card rounded-xl p-5 mb-6">
+        <div className="glass-card mb-6 rounded-xl p-5">
           <div className="flex items-center justify-center gap-4">
             {phases.map((phase, i) => (
-              <div key={phase.label} className="flex items-center gap-3">
+              <div className="flex items-center gap-3" key={phase.label}>
                 <div className="text-center">
-                  <div className="w-9 h-9 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-1.5">
+                  <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-success/15">
                     <svg
-                      className="w-4 h-4 text-success"
+                      className="h-4 w-4 text-success"
                       fill="none"
-                      viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2.5}
+                      viewBox="0 0 24 24"
                     >
                       <path
+                        d="M4.5 12.75l6 6 9-13.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
                       />
                     </svg>
                   </div>
-                  <p className="text-xs font-semibold">{phase.label}</p>
+                  <p className="font-semibold text-xs">{phase.label}</p>
                   <p className="text-[10px] text-muted-foreground">
                     {phase.description}
                   </p>
                 </div>
                 {i < phases.length - 1 && (
-                  <div className="w-8 h-px bg-success/30 -mt-6" />
+                  <div className="-mt-6 h-px w-8 bg-success/30" />
                 )}
               </div>
             ))}
@@ -87,11 +87,11 @@ export default async function CompletePage({
         </div>
 
         {/* What happens next */}
-        <div className="glass-card rounded-xl p-6 mb-8">
-          <h3 className="font-semibold text-sm mb-3">What happens next?</h3>
-          <ul className="space-y-2.5 text-sm text-muted-foreground text-left">
+        <div className="glass-card mb-8 rounded-xl p-6">
+          <h3 className="mb-3 font-semibold text-sm">What happens next?</h3>
+          <ul className="space-y-2.5 text-left text-muted-foreground text-sm">
             <li className="flex items-start gap-2.5">
-              <span className="text-primary mt-0.5 font-bold text-xs w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-xs">
                 1
               </span>
               <span>
@@ -100,7 +100,7 @@ export default async function CompletePage({
               </span>
             </li>
             <li className="flex items-start gap-2.5">
-              <span className="text-primary mt-0.5 font-bold text-xs w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-xs">
                 2
               </span>
               <span>
@@ -109,7 +109,7 @@ export default async function CompletePage({
               </span>
             </li>
             <li className="flex items-start gap-2.5">
-              <span className="text-primary mt-0.5 font-bold text-xs w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-xs">
                 3
               </span>
               <span>
@@ -119,7 +119,7 @@ export default async function CompletePage({
           </ul>
         </div>
 
-        <p className="text-xs text-muted-foreground">Powered by {APP_NAME}</p>
+        <p className="text-muted-foreground text-xs">Powered by {APP_NAME}</p>
       </div>
     </main>
   );

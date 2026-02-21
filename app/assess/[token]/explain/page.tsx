@@ -1,7 +1,7 @@
-import { QuickfireRound } from "@/components/assessment/QuickfireRound";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { getSessionWithCandidate } from "@/lib/sessions/manager";
 import { redirect } from "next/navigation";
+import { QuickfireRound } from "@/components/assessment/QuickfireRound";
+import { getSessionWithCandidate } from "@/lib/sessions/manager";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function ExplainPhasePage({
   params,
@@ -21,7 +21,7 @@ export default async function ExplainPhasePage({
   // Redirect if not in explain phase
   if (session.current_phase !== "explain") {
     redirect(
-      `/assess/${token}/${session.current_phase === "complete" ? "complete" : session.current_phase}`,
+      `/assess/${token}/${session.current_phase === "complete" ? "complete" : session.current_phase}`
     );
   }
 
@@ -31,7 +31,9 @@ export default async function ExplainPhasePage({
   if (metadata.questions && Array.isArray(metadata.questions)) {
     return (
       <QuickfireRound
-        questions={metadata.questions as import("@/lib/claude/client").QuickfireQuestion[]}
+        questions={
+          metadata.questions as import("@/lib/claude/client").QuickfireQuestion[]
+        }
         sessionId={session.id}
         token={token}
       />
@@ -53,7 +55,8 @@ export default async function ExplainPhasePage({
     combinedCode = submissions
       .map((s, i) => {
         const meta = (s.metadata as Record<string, unknown>) ?? {};
-        const challengeId = (meta.challenge_id as string) ?? `challenge-${i + 1}`;
+        const challengeId =
+          (meta.challenge_id as string) ?? `challenge-${i + 1}`;
         return `// ─── Challenge: ${challengeId} ───\n${s.code ?? ""}`;
       })
       .join("\n\n");

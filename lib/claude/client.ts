@@ -13,7 +13,7 @@ const anthropic = new Anthropic({
  */
 export async function streamChat(
   messages: Anthropic.MessageParam[],
-  systemPrompt: string,
+  systemPrompt: string
 ) {
   const stream = anthropic.messages.stream({
     model: "claude-sonnet-4-20250514",
@@ -71,7 +71,7 @@ function validateQuestions(parsed: unknown): parsed is QuickfireQuestion[] {
       q !== null &&
       "type" in q &&
       "question" in q &&
-      "timeLimitSeconds" in q,
+      "timeLimitSeconds" in q
   );
 }
 
@@ -81,7 +81,7 @@ function validateQuestions(parsed: unknown): parsed is QuickfireQuestion[] {
  */
 export async function generateQuestions(
   code: string,
-  systemPrompt: string,
+  systemPrompt: string
 ): Promise<QuickfireQuestion[] | null> {
   const userMessage = `Analyze the following React code and generate targeted questions:\n\n${code}`;
 
@@ -99,9 +99,7 @@ export async function generateQuestions(
         messages: [{ role: "user", content: userMessage }],
       });
 
-      const textBlock = response.content.find(
-        (block) => block.type === "text",
-      );
+      const textBlock = response.content.find((block) => block.type === "text");
       if (!textBlock || textBlock.type !== "text") continue;
 
       const jsonStr = extractJson(textBlock.text);
@@ -126,7 +124,7 @@ export async function gradeResponse(
   candidateResponse: string,
   codeReference: string,
   responseTimeMs: number,
-  gradingCriteria: string,
+  gradingCriteria: string
 ): Promise<{ correct: boolean; score: number; feedback: string }> {
   const prompt = QUICKFIRE_GRADING_PROMPT.replace("{question}", question)
     .replace("{codeReference}", codeReference || "N/A")

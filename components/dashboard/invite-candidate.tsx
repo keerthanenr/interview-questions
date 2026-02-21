@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 
 export function InviteCandidateButton({
   assessmentId,
@@ -64,9 +64,19 @@ export function InviteCandidateButton({
 
   if (!isOpen) {
     return (
-      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        <svg className="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+      <Button onClick={() => setIsOpen(true)} size="sm" variant="outline">
+        <svg
+          className="mr-1.5 h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         Invite
       </Button>
@@ -74,53 +84,66 @@ export function InviteCandidateButton({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={handleClose}
+    >
       <div
-        className="w-full max-w-md bg-card border rounded-xl shadow-2xl p-6 animate-slide-up"
+        className="w-full max-w-md animate-slide-up rounded-xl border bg-card p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-semibold mb-4">Invite Candidate</h3>
+        <h3 className="mb-4 font-semibold">Invite Candidate</h3>
 
         {inviteLink ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Share this link with the candidate to start their assessment:
             </p>
             <div className="flex items-center gap-2">
-              <Input value={inviteLink} readOnly className="text-xs font-mono" />
-              <Button size="sm" onClick={handleCopy}>Copy</Button>
+              <Input
+                className="font-mono text-xs"
+                readOnly
+                value={inviteLink}
+              />
+              <Button onClick={handleCopy} size="sm">
+                Copy
+              </Button>
             </div>
-            <Button variant="ghost" className="w-full" onClick={handleClose}>
+            <Button className="w-full" onClick={handleClose} variant="ghost">
               Done
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleInvite} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleInvite}>
             <div className="space-y-2">
               <Label htmlFor="invite-email">Email (required)</Label>
               <Input
                 id="invite-email"
-                type="email"
-                placeholder="candidate@example.com"
-                value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="candidate@example.com"
                 required
+                type="email"
+                value={email}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="invite-name">Name (optional)</Label>
               <Input
                 id="invite-name"
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Jane Smith"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={!email.trim() || isSubmitting} className="flex-1">
+              <Button
+                className="flex-1"
+                disabled={!email.trim() || isSubmitting}
+                type="submit"
+              >
                 {isSubmitting ? "Inviting..." : "Send Invite"}
               </Button>
-              <Button type="button" variant="ghost" onClick={handleClose}>
+              <Button onClick={handleClose} type="button" variant="ghost">
                 Cancel
               </Button>
             </div>

@@ -11,6 +11,10 @@ const VALID_EVENT_TYPES: EventType[] = [
   "quickfire_answered",
   "review_comment_added",
   "phase_transition",
+  "terminal_command",
+  "claude_code_interaction",
+  "test_run_result",
+  "file_tree_action",
 ];
 
 interface LogEventParams {

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/lib/supabase/server";
-import { InviteCandidateButton } from "@/components/dashboard/invite-candidate";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
+import { InviteCandidateButton } from "@/components/dashboard/invite-candidate";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
 const statusColors: Record<string, string> = {
   active: "bg-success/15 text-success border-success/30",
@@ -50,7 +50,9 @@ export default async function DashboardPage() {
   if (dbUser) {
     const { data } = await supabase
       .from("assessments")
-      .select("id, title, status, created_at, candidates(id, email, full_name, status, token)")
+      .select(
+        "id, title, status, created_at, candidates(id, email, full_name, status, token)"
+      )
       .eq("org_id", dbUser.org_id)
       .order("created_at", { ascending: false });
 
@@ -60,12 +62,22 @@ export default async function DashboardPage() {
   if (assessments.length === 0) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Your Assessments</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="font-bold text-2xl">Your Assessments</h1>
           <Link href="/dashboard/new">
             <Button>
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              <svg
+                className="mr-2 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 4.5v15m7.5-7.5h-15"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               Create Assessment
             </Button>
@@ -73,14 +85,25 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-6">
-            <svg className="w-8 h-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
+            <svg
+              className="h-8 w-8 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold mb-2">No assessments yet</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mb-6">
-            Create your first assessment to start evaluating React developers with AI-augmented challenges.
+          <h2 className="mb-2 font-semibold text-lg">No assessments yet</h2>
+          <p className="mb-6 max-w-sm text-muted-foreground text-sm">
+            Create your first assessment to start evaluating React developers
+            with AI-augmented challenges.
           </p>
           <Link href="/dashboard/new">
             <Button>Create your first assessment</Button>
@@ -92,12 +115,22 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Your Assessments</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="font-bold text-2xl">Your Assessments</h1>
         <Link href="/dashboard/new">
           <Button>
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            <svg
+              className="mr-2 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 4.5v15m7.5-7.5h-15"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Create Assessment
           </Button>
@@ -107,23 +140,40 @@ export default async function DashboardPage() {
       <div className="space-y-4">
         {assessments.map((assessment) => {
           const candidates = assessment.candidates ?? [];
-          const invited = candidates.filter((c) => c.status === "invited").length;
-          const inProgress = candidates.filter((c) => c.status === "in_progress").length;
-          const completed = candidates.filter((c) => c.status === "completed").length;
+          const invited = candidates.filter(
+            (c) => c.status === "invited"
+          ).length;
+          const inProgress = candidates.filter(
+            (c) => c.status === "in_progress"
+          ).length;
+          const completed = candidates.filter(
+            (c) => c.status === "completed"
+          ).length;
 
           return (
-            <div key={assessment.id} className="rounded-xl border bg-card/50 overflow-hidden">
+            <div
+              className="overflow-hidden rounded-xl border bg-card/50"
+              key={assessment.id}
+            >
               {/* Assessment header */}
-              <div className="px-5 py-4 flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-sm truncate">{assessment.title}</h3>
-                    <Badge variant="outline" className={statusColors[assessment.status] ?? ""}>
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <h3 className="truncate font-semibold text-sm">
+                      {assessment.title}
+                    </h3>
+                    <Badge
+                      className={statusColors[assessment.status] ?? ""}
+                      variant="outline"
+                    >
                       {assessment.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>Created {new Date(assessment.created_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-4 text-muted-foreground text-xs">
+                    <span>
+                      Created{" "}
+                      {new Date(assessment.created_at).toLocaleDateString()}
+                    </span>
                     <span>{invited} invited</span>
                     <span>{inProgress} in progress</span>
                     <span>{completed} completed</span>
@@ -134,27 +184,38 @@ export default async function DashboardPage() {
 
               {/* Candidates list */}
               {candidates.length > 0 && (
-                <div className="border-t divide-y">
+                <div className="divide-y border-t">
                   {candidates.map((candidate) => (
-                    <div key={candidate.id} className="px-5 py-3 flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
-                        {(candidate.full_name ?? candidate.email)[0].toUpperCase()}
+                    <div
+                      className="flex items-center gap-3 px-5 py-3"
+                      key={candidate.id}
+                    >
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-medium text-xs">
+                        {(candidate.full_name ??
+                          candidate.email)[0].toUpperCase()}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-sm">
                           {candidate.full_name ?? candidate.email}
                         </p>
                         {candidate.full_name && (
-                          <p className="text-xs text-muted-foreground truncate">{candidate.email}</p>
+                          <p className="truncate text-muted-foreground text-xs">
+                            {candidate.email}
+                          </p>
                         )}
                       </div>
-                      <Badge variant="outline" className={candidateStatusColors[candidate.status] ?? ""}>
+                      <Badge
+                        className={
+                          candidateStatusColors[candidate.status] ?? ""
+                        }
+                        variant="outline"
+                      >
                         {candidate.status.replace("_", " ")}
                       </Badge>
                       <CopyLinkButton token={candidate.token} />
                       {candidate.status === "completed" && (
                         <Link href={`/dashboard/candidate/${candidate.id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs">
+                          <Button className="text-xs" size="sm" variant="ghost">
                             View Dossier
                           </Button>
                         </Link>

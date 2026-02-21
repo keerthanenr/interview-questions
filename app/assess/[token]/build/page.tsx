@@ -1,9 +1,9 @@
+import { redirect } from "next/navigation";
 import { AssessmentLayout } from "@/components/assessment/AssessmentLayout";
 import { getChallengeForSession } from "@/lib/challenges/loader";
-import { startSession } from "@/lib/sessions/manager";
-import { logEvent } from "@/lib/events/logger";
 import { BUILD_PHASE_MINUTES } from "@/lib/constants";
-import { redirect } from "next/navigation";
+import { logEvent } from "@/lib/events/logger";
+import { startSession } from "@/lib/sessions/manager";
 
 export default async function BuildPhasePage({
   params,
@@ -44,6 +44,7 @@ export default async function BuildPhasePage({
 
   return (
     <AssessmentLayout
+      buildPhaseMinutes={BUILD_PHASE_MINUTES}
       challenge={{
         id: challenge.id,
         title: challenge.title,
@@ -54,11 +55,10 @@ export default async function BuildPhasePage({
         starterCode: challenge.starterCode,
       }}
       currentPhase="build"
-      sessionId={session.id}
-      token={token}
-      startedAt={session.started_at ?? undefined}
-      buildPhaseMinutes={BUILD_PHASE_MINUTES}
       initialChallengeIndex={challengeIndex}
+      sessionId={session.id}
+      startedAt={session.started_at ?? undefined}
+      token={token}
     />
   );
 }

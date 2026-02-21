@@ -1,16 +1,13 @@
+import type { NextRequest } from "next/server";
 import { gradeResponse } from "@/lib/claude/client";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { sessionId } = await request.json();
 
     if (!sessionId) {
-      return Response.json(
-        { error: "sessionId is required" },
-        { status: 400 },
-      );
+      return Response.json({ error: "sessionId is required" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -36,7 +33,7 @@ export async function POST(request: NextRequest) {
         String(resp.response ?? "(no answer)"),
         String(question.codeReference ?? "N/A"),
         resp.response_time_ms ?? 0,
-        String(question.gradingCriteria ?? ""),
+        String(question.gradingCriteria ?? "")
       );
 
       await supabase

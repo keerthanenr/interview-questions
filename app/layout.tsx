@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -42,7 +42,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
     >
-      <body className="antialiased min-h-dvh">
+      <body className="min-h-dvh antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

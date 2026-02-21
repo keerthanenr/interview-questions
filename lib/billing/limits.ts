@@ -1,8 +1,8 @@
-import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "@/lib/stripe/config";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function checkAssessmentLimit(
-  orgId: string,
+  orgId: string
 ): Promise<{ allowed: boolean; used: number; limit: number }> {
   const supabase = createAdminClient();
 
@@ -16,8 +16,8 @@ export async function checkAssessmentLimit(
   const plan = (org?.plan ?? "starter") as keyof typeof PLANS;
   const limit = PLANS[plan].assessmentsPerMonth;
 
-  if (limit === Infinity) {
-    return { allowed: true, used: 0, limit: Infinity };
+  if (limit === Number.POSITIVE_INFINITY) {
+    return { allowed: true, used: 0, limit: Number.POSITIVE_INFINITY };
   }
 
   // Get all assessment IDs for this org
@@ -37,7 +37,7 @@ export async function checkAssessmentLimit(
   const monthStart = new Date(
     now.getFullYear(),
     now.getMonth(),
-    1,
+    1
   ).toISOString();
 
   const { count } = await supabase

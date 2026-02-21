@@ -1,7 +1,7 @@
+import type { NextRequest } from "next/server";
 import { streamChat } from "@/lib/claude/client";
 import { BUILD_PHASE_SYSTEM_PROMPT } from "@/lib/claude/prompts";
 import { logEvent } from "@/lib/events/logger";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!messages || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: "messages array is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch {
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

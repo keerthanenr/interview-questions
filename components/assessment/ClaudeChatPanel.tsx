@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  type KeyboardEvent,
   type FormEvent,
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,10 @@ interface ClaudeChatPanelProps {
   onClaudeCode?: (code: string, timestamp: number) => void;
 }
 
-export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProps) {
+export function ClaudeChatPanel({
+  sessionId,
+  onClaudeCode,
+}: ClaudeChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -122,8 +125,8 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
 
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === assistantId ? { ...m, content: fullText } : m,
-            ),
+              m.id === assistantId ? { ...m, content: fullText } : m
+            )
           );
         }
 
@@ -141,8 +144,8 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
                   content:
                     "Something went wrong. Click the retry button or send your message again.",
                 }
-              : m,
-          ),
+              : m
+          )
         );
         // Store last failed message for retry
         lastFailedMessageRef.current = text;
@@ -150,7 +153,7 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming, sessionId, onClaudeCode],
+    [messages, isStreaming, sessionId, onClaudeCode]
   );
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -166,37 +169,37 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-2.5 border-b">
+      <div className="flex-shrink-0 border-b px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse-warm" />
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="h-2 w-2 animate-pulse-warm rounded-full bg-success" />
+          <h3 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
             Claude Assistant
           </h3>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-3">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+          <div className="flex h-full flex-col items-center justify-center px-4 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <svg
-                className="w-5 h-5 text-primary"
+                className="h-5 w-5 text-primary"
                 fill="none"
-                viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={1.5}
+                viewBox="0 0 24 24"
               >
                 <path
+                  d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
                 />
               </svg>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Ask me anything about the challenge. I can help with React
               concepts, debugging, or code suggestions.
             </p>
@@ -205,15 +208,15 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
 
         {messages.map((message) => (
           <div
-            key={message.id}
             className={cn(
               "flex gap-2.5",
-              message.role === "user" ? "justify-end" : "justify-start",
+              message.role === "user" ? "justify-end" : "justify-start"
             )}
+            key={message.id}
           >
             {message.role === "assistant" && (
-              <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-bold text-primary">C</span>
+              <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-primary/15">
+                <span className="font-bold text-primary text-xs">C</span>
               </div>
             )}
             <div
@@ -221,15 +224,12 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
                 "max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed",
                 message.role === "user"
                   ? "bg-primary text-primary-foreground"
-                  : "bg-secondary",
+                  : "bg-secondary"
               )}
             >
               {message.role === "assistant" ? (
                 <div
-                  className="prose prose-sm prose-invert max-w-none
-                    prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5
-                    prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                    prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-border prose-pre:rounded-lg prose-pre:my-2"
+                  className="prose prose-sm prose-invert prose-headings:my-2 prose-li:my-0.5 prose-ol:my-1.5 prose-p:my-1.5 prose-pre:my-2 prose-ul:my-1.5 max-w-none prose-code:rounded prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-code:bg-primary/10 prose-pre:bg-[#0d1117] prose-code:px-1 prose-code:py-0.5 prose-code:text-primary prose-code:text-xs"
                   // biome-ignore lint: rendering markdown from Claude API
                   dangerouslySetInnerHTML={{
                     __html: formatMarkdown(message.content),
@@ -242,9 +242,9 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
                 message.content === "" &&
                 isStreaming && (
                   <div className="flex items-center gap-1 py-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-pulse" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-pulse delay-100" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-pulse delay-200" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground delay-100" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground delay-200" />
                   </div>
                 )}
             </div>
@@ -255,44 +255,44 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
 
       {/* Input area */}
       <form
-        onSubmit={handleSubmit}
         className="flex-shrink-0 border-t px-3 py-2.5"
+        onSubmit={handleSubmit}
       >
         <div className="flex items-end gap-2">
           <textarea
-            ref={textareaRef}
-            value={input}
+            className="max-h-24 flex-1 resize-none rounded-lg bg-secondary px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            disabled={isStreaming}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask Claude for help..."
-            disabled={isStreaming}
+            ref={textareaRef}
             rows={1}
-            className="flex-1 resize-none bg-secondary rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 max-h-24"
+            value={input}
           />
           <Button
-            type="submit"
-            size="icon"
+            className="h-9 w-9 flex-shrink-0"
             disabled={!input.trim() || isStreaming}
-            className="flex-shrink-0 h-9 w-9"
+            size="icon"
+            type="submit"
           >
             <svg
-              className="w-4 h-4"
+              className="h-4 w-4"
               fill="none"
-              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
+              viewBox="0 0 24 24"
             >
               <path
+                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
               />
             </svg>
           </Button>
         </div>
         {lastFailedMessageRef.current && !isStreaming && (
           <button
-            type="button"
+            className="mt-1 px-1 text-primary text-xs hover:underline"
             onClick={() => {
               const msg = lastFailedMessageRef.current;
               lastFailedMessageRef.current = null;
@@ -300,12 +300,12 @@ export function ClaudeChatPanel({ sessionId, onClaudeCode }: ClaudeChatPanelProp
               setMessages((prev) => prev.slice(0, -2));
               if (msg) sendMessage(msg);
             }}
-            className="text-xs text-primary hover:underline mt-1 px-1"
+            type="button"
           >
             Retry last message
           </button>
         )}
-        <p className="text-[10px] text-muted-foreground mt-1.5 px-1">
+        <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
           Enter to send, Shift+Enter for newline
         </p>
       </form>
@@ -328,7 +328,7 @@ function formatMarkdown(text: string): string {
     // Code blocks
     .replace(
       /```(\w*)\n([\s\S]*?)```/g,
-      '<pre><code class="language-$1">$2</code></pre>',
+      '<pre><code class="language-$1">$2</code></pre>'
     )
     // Inline code
     .replace(/`([^`]+)`/g, "<code>$1</code>")
@@ -344,7 +344,7 @@ function formatMarkdown(text: string): string {
     /<pre><code(.*?)>([\s\S]*?)<\/code><\/pre>/g,
     (_, attrs, code) => {
       return `<pre><code${attrs}>${code.replace(/<br \/>/g, "\n")}</code></pre>`;
-    },
+    }
   );
 
   return html;

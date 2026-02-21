@@ -1,20 +1,27 @@
-import { selectNextChallenge } from "@/lib/adaptive/engine";
+import type { NextRequest } from "next/server";
 import type { ChallengeResult } from "@/lib/adaptive/engine";
+import { selectNextChallenge } from "@/lib/adaptive/engine";
 import { quickCodeQualityScore } from "@/lib/adaptive/quality";
 import { quickAIRelianceScore } from "@/lib/adaptive/reliance";
 import { getChallenge, getChallengePool } from "@/lib/challenges/loader";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId, challengeId, code, completed, timeUsedMs, timeLimitMs } =
-      await request.json();
+    const {
+      sessionId,
+      challengeId,
+      code,
+      completed,
+      timeUsedMs,
+      timeLimitMs,
+      testResults,
+    } = await request.json();
 
     if (!sessionId || !challengeId) {
       return Response.json(
         { error: "sessionId and challengeId are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -36,10 +43,11 @@ export async function POST(request: NextRequest) {
     const currentChallenge = await getChallenge(challengeId);
     const allChallenges = await getChallengePool();
 
-    // Calculate scores
+    // Calculate scores — use real test results when available
     const codeQualityScore = quickCodeQualityScore(
       code ?? "",
       currentChallenge,
+      testResults ?? null
     );
     const aiRelianceRatio = quickAIRelianceScore(eventList, code ?? "");
 
@@ -72,21 +80,25 @@ export async function POST(request: NextRequest) {
 
     if (available.length === 0) {
       // No more challenges available — end build phase
-      return Response.json({ done: true, reason: "No more challenges available" });
+      return Response.json({
+        done: true,
+        reason: "No more challenges available",
+      });
     }
 
     // Run the adaptive engine
     const decision = selectNextChallenge(
       previousResults,
       available,
-      currentChallenge.tier,
+      currentChallenge.tier
     );
 
     // Update session metadata with challenge results and flags
     const updatedMetadata = {
       ...metadata,
       challengeResults: previousResults,
-      currentChallengeIndex: ((metadata.currentChallengeIndex as number) ?? 0) + 1,
+      currentChallengeIndex:
+        ((metadata.currentChallengeIndex as number) ?? 0) + 1,
       ...(decision.flagHighAIReliance ? { highAIRelianceFlag: true } : {}),
     };
 
