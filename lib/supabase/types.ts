@@ -2,7 +2,11 @@
 
 export type Plan = "starter" | "professional" | "enterprise";
 export type UserRole = "admin" | "manager" | "recruiter";
-export type CandidateStatus = "invited" | "in_progress" | "completed" | "expired";
+export type CandidateStatus =
+  | "invited"
+  | "in_progress"
+  | "completed"
+  | "expired";
 export type AssessmentPhase = "build" | "explain" | "review" | "complete";
 export type SubmissionPhase = "build" | "explain" | "review";
 export type AssessmentStatus = "active" | "paused" | "archived";
@@ -16,7 +20,11 @@ export type EventType =
   | "challenge_submitted"
   | "quickfire_answered"
   | "review_comment_added"
-  | "phase_transition";
+  | "phase_transition"
+  | "terminal_command"
+  | "claude_code_interaction"
+  | "test_run_result"
+  | "file_tree_action";
 
 export type IssueCategory =
   | "logic_bug"

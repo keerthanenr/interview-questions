@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ChallengePanel } from "./ChallengePanel";
-import { CodeEditorPanel } from "./CodeEditorPanel";
 import { Button } from "@/components/ui/button";
+import { getTestFileContent } from "@/lib/challenges/tests";
 import { cn } from "@/lib/utils";
+import { ChallengePanel } from "./ChallengePanel";
+import { SandboxIDE } from "./SandboxIDE";
 import { ScreenSizeGuard } from "./ScreenSizeGuard";
 
 type Phase = "build" | "explain" | "review";
@@ -53,12 +54,12 @@ export function AssessmentLayout({
     useState<ChallengeData>(initialChallenge);
   const [challengeIndex, setChallengeIndex] = useState(initialChallengeIndex);
   const [challengeTimeLeft, setChallengeTimeLeft] = useState(
-    initialChallenge.timeLimit * 60,
+    initialChallenge.timeLimit * 60
   );
   const [overallTimeLeft, setOverallTimeLeft] = useState(() => {
     if (startedAt) {
       const elapsed = Math.floor(
-        (Date.now() - new Date(startedAt).getTime()) / 1000,
+        (Date.now() - new Date(startedAt).getTime()) / 1000
       );
       return Math.max(buildPhaseMinutes * 60 - elapsed, 0);
     }
@@ -81,18 +82,18 @@ export function AssessmentLayout({
       try {
         sessionStorage.setItem(
           `ra_code_${sessionId}_${currentChallenge.id}`,
-          JSON.stringify(files),
+          JSON.stringify(files)
         );
       } catch {}
     },
-    [sessionId, currentChallenge.id],
+    [sessionId, currentChallenge.id]
   );
 
   // Restore code from sessionStorage on mount
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem(
-        `ra_code_${sessionId}_${currentChallenge.id}`,
+        `ra_code_${sessionId}_${currentChallenge.id}`
       );
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -115,7 +116,10 @@ export function AssessmentLayout({
           body: JSON.stringify({
             sessionId,
             challengeId: currentChallenge.id,
-            code: codeStateRef.current["/App.js"] ?? "",
+            code:
+              codeStateRef.current["/workspace/project/src/App.jsx"] ??
+              codeStateRef.current["/App.js"] ??
+              "",
             completed,
             timeUsedMs,
             timeLimitMs: currentChallenge.timeLimit * 60 * 1000,
@@ -160,12 +164,12 @@ export function AssessmentLayout({
         return false;
       } catch {
         toast.error(
-          "Failed to load next challenge. Continuing to explain phase.",
+          "Failed to load next challenge. Continuing to explain phase."
         );
         return true;
       }
     },
-    [challengeIndex, overallTimeLeft, sessionId, currentChallenge],
+    [challengeIndex, overallTimeLeft, sessionId, currentChallenge]
   );
 
   // Submit current challenge
@@ -179,7 +183,33 @@ export function AssessmentLayout({
         (currentChallenge.timeLimit * 60 - challengeTimeLeft) * 1000;
 
       if (currentPhase === "build") {
-        const mainCode = codeStateRef.current["/App.js"] ?? "";
+        // Get the main code from sandbox (fallback to local state)
+        const mainCode =
+          codeStateRef.current["/workspace/project/src/App.jsx"] ??
+          codeStateRef.current["/App.js"] ??
+          "";
+
+        // Run tests in the sandbox and capture results
+        let testResults = null;
+        try {
+          const sandboxUrl = process.env.NEXT_PUBLIC_SANDBOX_WORKER_URL || "";
+          const sandboxSecret =
+            process.env.NEXT_PUBLIC_SANDBOX_APP_SECRET || "";
+          const testRes = await fetch(`${sandboxUrl}/sandbox/test`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sandboxSecret}`,
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+          if (testRes.ok) {
+            const testData = await testRes.json();
+            testResults = testData.testResults;
+          }
+        } catch {
+          // Test run failure shouldn't block submission
+        }
 
         await fetch("/api/assess/challenge/submit", {
           method: "POST",
@@ -188,8 +218,29 @@ export function AssessmentLayout({
             sessionId,
             code: mainCode,
             challengeId: currentChallenge.id,
+            testResults,
           }),
         });
+
+        // Log test results as an event
+        if (testResults) {
+          fetch("/api/assess/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              eventType: "test_run_result",
+              payload: {
+                challenge_id: currentChallenge.id,
+                passed: testResults.passed,
+                failed: testResults.failed,
+                total: testResults.total,
+                tests: testResults.tests,
+                timestamp: new Date().toISOString(),
+              },
+            }),
+          }).catch(() => {});
+        }
 
         const isDone = await loadNextChallenge(true, challengeStartTime);
 
@@ -296,31 +347,31 @@ export function AssessmentLayout({
   // Transition screen between challenges
   if (showTransition) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background">
-        <div className="animate-scale-in text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-success/15 flex items-center justify-center">
+      <div className="flex h-screen flex-col items-center justify-center bg-background">
+        <div className="animate-scale-in space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15">
             <svg
-              className="w-8 h-8 text-success"
+              className="h-8 w-8 text-success"
               fill="none"
-              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
+              viewBox="0 0 24 24"
             >
               <path
+                d="M4.5 12.75l6 6 9-13.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M4.5 12.75l6 6 9-13.5"
               />
             </svg>
           </div>
-          <h2 className="text-xl font-display font-bold">Nice work!</h2>
+          <h2 className="font-bold font-display text-xl">Nice work!</h2>
           <p className="text-muted-foreground">
             Loading your next challenge...
           </p>
-          <div className="flex gap-1 justify-center">
-            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-            <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-100" />
-            <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-200" />
+          <div className="flex justify-center gap-1">
+            <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-primary delay-100" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-primary delay-200" />
           </div>
         </div>
       </div>
@@ -329,168 +380,171 @@ export function AssessmentLayout({
 
   return (
     <ScreenSizeGuard>
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <header className="h-12 flex-shrink-0 border-b bg-card/80 backdrop-blur-md flex items-center px-4 gap-4">
-        <h2 className="font-display font-semibold text-sm">
-          {phaseLabel} Phase
-        </h2>
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
+        {/* Header */}
+        <header className="flex h-12 flex-shrink-0 items-center gap-4 border-b bg-card/80 px-4 backdrop-blur-md">
+          <h2 className="font-display font-semibold text-sm">
+            {phaseLabel} Phase
+          </h2>
 
-        {/* Phase progress */}
-        <div className="flex items-center gap-1 ml-2">
-          {phases.map((phase, i) => (
-            <div key={phase.key} className="flex items-center">
-              <div
+          {/* Phase progress */}
+          <div className="ml-2 flex items-center gap-1">
+            {phases.map((phase, i) => (
+              <div className="flex items-center" key={phase.key}>
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs transition-colors",
+                    phase.key === currentPhase
+                      ? "bg-primary/15 text-primary"
+                      : phases.indexOf(
+                            phases.find((p) => p.key === currentPhase)!
+                          ) > i
+                        ? "text-success"
+                        : "text-muted-foreground"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-4 w-4 items-center justify-center rounded-full border font-bold text-[10px]",
+                      phase.key === currentPhase
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : phases.indexOf(
+                              phases.find((p) => p.key === currentPhase)!
+                            ) > i
+                          ? "border-success bg-success text-success-foreground"
+                          : "border-muted-foreground/30"
+                    )}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="hidden sm:inline">{phase.label}</span>
+                </div>
+                {i < phases.length - 1 && (
+                  <div className="mx-0.5 h-px w-4 bg-border" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Challenge progress (build phase only) */}
+          {currentPhase === "build" && (
+            <div className="ml-2 flex items-center gap-1.5 text-muted-foreground text-xs">
+              <span className="hidden md:inline">Challenge</span>
+              <span className="font-medium font-mono text-foreground">
+                {challengeIndex + 1} of {MAX_CHALLENGES}
+              </span>
+            </div>
+          )}
+
+          <div className="flex-1" />
+
+          {/* Timers */}
+          <div className="flex items-center gap-3 font-mono text-sm">
+            {currentPhase === "build" && (
+              <>
+                <div
+                  className="flex items-center gap-1.5"
+                  title="Challenge time remaining"
+                >
+                  <svg
+                    className="h-3.5 w-3.5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span
+                    className={cn(
+                      "text-xs",
+                      challengeTimeLeft <= 120
+                        ? "text-destructive"
+                        : "text-foreground"
+                    )}
+                  >
+                    {String(challengeMinutes).padStart(2, "0")}:
+                    {String(challengeSeconds).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-border" />
+              </>
+            )}
+            <div
+              className="flex items-center gap-1.5"
+              title="Overall time remaining"
+            >
+              <svg
+                className="h-4 w-4 text-muted-foreground"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
-                  phase.key === currentPhase
-                    ? "bg-primary/15 text-primary"
-                    : phases.indexOf(
-                          phases.find((p) => p.key === currentPhase)!,
-                        ) > i
-                      ? "text-success"
-                      : "text-muted-foreground",
+                  overallTimeLeft <= 300
+                    ? "text-destructive"
+                    : "text-foreground"
                 )}
               >
-                <span
-                  className={cn(
-                    "w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold border",
-                    phase.key === currentPhase
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : phases.indexOf(
-                            phases.find((p) => p.key === currentPhase)!,
-                          ) > i
-                        ? "border-success bg-success text-success-foreground"
-                        : "border-muted-foreground/30",
-                  )}
-                >
-                  {i + 1}
-                </span>
-                <span className="hidden sm:inline">{phase.label}</span>
-              </div>
-              {i < phases.length - 1 && (
-                <div className="w-4 h-px bg-border mx-0.5" />
-              )}
+                {String(overallMinutes).padStart(2, "0")}:
+                {String(overallSeconds).padStart(2, "0")}
+              </span>
             </div>
-          ))}
-        </div>
-
-        {/* Challenge progress (build phase only) */}
-        {currentPhase === "build" && (
-          <div className="flex items-center gap-1.5 ml-2 text-xs text-muted-foreground">
-            <span className="hidden md:inline">Challenge</span>
-            <span className="font-mono font-medium text-foreground">
-              {challengeIndex + 1} of {MAX_CHALLENGES}
-            </span>
           </div>
-        )}
+        </header>
 
-        <div className="flex-1" />
-
-        {/* Timers */}
-        <div className="flex items-center gap-3 text-sm font-mono">
-          {currentPhase === "build" && (
-            <>
-              <div
-                className="flex items-center gap-1.5"
-                title="Challenge time remaining"
-              >
-                <svg
-                  className="w-3.5 h-3.5 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span
-                  className={cn(
-                    "text-xs",
-                    challengeTimeLeft <= 120
-                      ? "text-destructive"
-                      : "text-foreground",
-                  )}
-                >
-                  {String(challengeMinutes).padStart(2, "0")}:
-                  {String(challengeSeconds).padStart(2, "0")}
-                </span>
-              </div>
-              <div className="w-px h-4 bg-border" />
-            </>
-          )}
-          <div
-            className="flex items-center gap-1.5"
-            title="Overall time remaining"
-          >
-            <svg
-              className="w-4 h-4 text-muted-foreground"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span
-              className={cn(
-                overallTimeLeft <= 300
-                  ? "text-destructive"
-                  : "text-foreground",
-              )}
-            >
-              {String(overallMinutes).padStart(2, "0")}:
-              {String(overallSeconds).padStart(2, "0")}
-            </span>
+        {/* Two-panel layout */}
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[22%] min-w-[260px] flex-shrink-0 overflow-y-auto border-r">
+            <ChallengePanel
+              challengeNumber={challengeIndex + 1}
+              description={currentChallenge.description}
+              difficulty={currentChallenge.tier as 1 | 2 | 3 | 4 | 5}
+              requirements={currentChallenge.requirements}
+              timeLimit={currentChallenge.timeLimit}
+              title={currentChallenge.title}
+              totalChallenges={MAX_CHALLENGES}
+            />
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <SandboxIDE
+              challengeId={currentChallenge.id}
+              key={editorKey}
+              onCodeChange={handleCodeChange}
+              readmeContent={`# ${currentChallenge.title}\n\n${currentChallenge.description.replace(/<[^>]*>/g, "")}\n\n## Requirements\n\n${currentChallenge.requirements.map((r) => `- ${r}`).join("\n")}\n\n## Testing\n\nRun \`npm test\` in the terminal to check your solution.`}
+              sessionId={sessionId}
+              starterCode={currentChallenge.starterCode}
+              testFileContent={getTestFileContent(currentChallenge.id)}
+            />
           </div>
         </div>
-      </header>
 
-      {/* Two-panel layout */}
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-[22%] min-w-[260px] border-r overflow-y-auto flex-shrink-0">
-          <ChallengePanel
-            title={currentChallenge.title}
-            description={currentChallenge.description}
-            requirements={currentChallenge.requirements}
-            difficulty={currentChallenge.tier as 1 | 2 | 3 | 4 | 5}
-            timeLimit={currentChallenge.timeLimit}
-            challengeNumber={challengeIndex + 1}
-            totalChallenges={MAX_CHALLENGES}
-          />
-        </div>
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <CodeEditorPanel
-            key={editorKey}
-            starterCode={currentChallenge.starterCode}
-            onCodeChange={handleCodeChange}
-            sessionId={sessionId}
-          />
-        </div>
+        {/* Footer */}
+        <footer className="flex h-12 flex-shrink-0 items-center justify-between border-t bg-card/80 px-4 backdrop-blur-md">
+          <p className="text-muted-foreground text-xs">
+            Your progress is saved automatically
+          </p>
+          <Button disabled={isSubmitting} onClick={handleSubmit} size="sm">
+            {isSubmitting
+              ? "Submitting..."
+              : challengeIndex < MAX_CHALLENGES - 1
+                ? "Submit Challenge"
+                : "Submit & Continue"}
+          </Button>
+        </footer>
       </div>
-
-      {/* Footer */}
-      <footer className="h-12 flex-shrink-0 border-t bg-card/80 backdrop-blur-md flex items-center justify-between px-4">
-        <p className="text-xs text-muted-foreground">
-          Your progress is saved automatically
-        </p>
-        <Button size="sm" disabled={isSubmitting} onClick={handleSubmit}>
-          {isSubmitting
-            ? "Submitting..."
-            : challengeIndex < MAX_CHALLENGES - 1
-              ? "Submit Challenge"
-              : "Submit & Continue"}
-        </Button>
-      </footer>
-    </div>
     </ScreenSizeGuard>
   );
 }
