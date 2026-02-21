@@ -1,7 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { getBaseUrl } from "@/lib/utils";
 
 export async function signInWithEmail(formData: FormData) {

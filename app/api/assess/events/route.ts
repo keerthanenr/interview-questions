@@ -1,7 +1,7 @@
+import type { NextRequest } from "next/server";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { EventType } from "@/lib/supabase/types";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !eventType) {
       return Response.json(
         { error: "sessionId and eventType are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (session.completed_at) {
       return Response.json(
         { error: "Session is already completed" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 

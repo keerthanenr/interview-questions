@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUpWithEmail, signInWithGoogle } from "@/lib/actions/auth";
+import { signInWithGoogle, signUpWithEmail } from "@/lib/actions/auth";
 import { APP_NAME } from "@/lib/constants";
 
 export default function SignUpPage() {
@@ -38,31 +38,31 @@ export default function SignUpPage() {
 
   if (successMessage) {
     return (
-      <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+      <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
         <div className="w-full max-w-sm animate-slide-up">
-          <div className="glass-card rounded-xl p-8 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+          <div className="glass-card space-y-4 rounded-xl p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/20">
               <svg
-                className="w-6 h-6 text-success"
+                className="h-6 w-6 text-success"
                 fill="none"
-                viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
+                viewBox="0 0 24 24"
               >
                 <path
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold">Check your email</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-semibold text-xl">Check your email</h2>
+            <p className="text-muted-foreground text-sm">
               We&apos;ve sent a confirmation link to your email address. Click
               it to activate your account.
             </p>
             <Link href="/login">
-              <Button variant="ghost" className="mt-2">
+              <Button className="mt-2" variant="ghost">
                 Back to sign in
               </Button>
             </Link>
@@ -73,18 +73,18 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+    <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-sm animate-slide-up">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">{APP_NAME}</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
+        <div className="mb-8 text-center">
+          <h1 className="font-bold text-3xl tracking-tight">{APP_NAME}</h1>
+          <p className="mt-2 text-muted-foreground text-sm">
             Create your account
           </p>
         </div>
 
-        <div className="glass-card rounded-xl p-6 space-y-6">
+        <div className="glass-card space-y-6 rounded-xl p-6">
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg px-4 py-3">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive text-sm">
               {error}
             </div>
           )}
@@ -93,43 +93,43 @@ export default function SignUpPage() {
             <div className="space-y-2">
               <Label htmlFor="fullName">Full name</Label>
               <Input
-                id="fullName"
-                name="fullName"
-                type="text"
-                placeholder="Jane Smith"
                 autoComplete="name"
                 disabled={isPending}
+                id="fullName"
+                name="fullName"
+                placeholder="Jane Smith"
+                type="text"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@company.com"
-                required
                 autoComplete="email"
                 disabled={isPending}
+                id="email"
+                name="email"
+                placeholder="you@company.com"
+                required
+                type="email"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                minLength={6}
                 autoComplete="new-password"
                 disabled={isPending}
+                id="password"
+                minLength={6}
+                name="password"
+                placeholder="••••••••"
+                required
+                type="password"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Must be at least 6 characters
               </p>
             </div>
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button className="w-full" disabled={isPending} type="submit">
               {isPending ? "Creating account..." : "Create account"}
             </Button>
           </form>
@@ -144,10 +144,10 @@ export default function SignUpPage() {
           </div>
 
           <Button
-            variant="outline"
             className="w-full"
-            onClick={handleGoogleSignIn}
             disabled={isPending}
+            onClick={handleGoogleSignIn}
+            variant="outline"
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -170,11 +170,11 @@ export default function SignUpPage() {
             Continue with Google
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-muted-foreground text-sm">
             Already have an account?{" "}
             <Link
+              className="font-medium text-primary hover:underline"
               href="/login"
-              className="text-primary hover:underline font-medium"
             >
               Sign in
             </Link>

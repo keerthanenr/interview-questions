@@ -1,7 +1,7 @@
-import { logEvent } from "@/lib/events/logger";
-import { loadReviewScenario } from "@/lib/data/loaders";
-import { createAdminClient } from "@/lib/supabase/admin";
 import type { NextRequest } from "next/server";
+import { loadReviewScenario } from "@/lib/data/loaders";
+import { logEvent } from "@/lib/events/logger";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 interface ReviewComment {
   filePath: string;
@@ -27,10 +27,7 @@ export async function POST(request: NextRequest) {
     };
 
     if (!sessionId) {
-      return Response.json(
-        { error: "sessionId is required" },
-        { status: 400 },
-      );
+      return Response.json({ error: "sessionId is required" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -126,17 +123,18 @@ export async function POST(request: NextRequest) {
         from_phase: "review",
         to_phase: "complete",
         issues_found: comments?.length ?? 0,
-        issues_categorized: comments?.filter((c) => {
-          for (const issue of seededIssues) {
-            if (
-              c.lineNumber >= issue.lineRange[0] &&
-              c.lineNumber <= issue.lineRange[1]
-            ) {
-              return true;
+        issues_categorized:
+          comments?.filter((c) => {
+            for (const issue of seededIssues) {
+              if (
+                c.lineNumber >= issue.lineRange[0] &&
+                c.lineNumber <= issue.lineRange[1]
+              ) {
+                return true;
+              }
             }
-          }
-          return false;
-        }).length ?? 0,
+            return false;
+          }).length ?? 0,
         total_seeded_issues: seededIssues.length,
         timestamp: new Date().toISOString(),
       },
@@ -147,7 +145,7 @@ export async function POST(request: NextRequest) {
       import("@/lib/scoring/dossier")
         .then((mod) => mod.generateDossier(session.candidate_id))
         .catch((err) =>
-          console.error("[ReviewSubmit] Dossier generation failed:", err),
+          console.error("[ReviewSubmit] Dossier generation failed:", err)
         );
     }
 

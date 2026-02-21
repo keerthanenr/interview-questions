@@ -32,7 +32,7 @@ const MAX_TIER = 5;
 export function selectNextChallenge(
   previousResults: ChallengeResult[],
   availableChallenges: Challenge[],
-  currentTier: number,
+  currentTier: number
 ): NextChallengeDecision {
   if (previousResults.length === 0) {
     // First challenge — pick from the current tier
@@ -54,7 +54,7 @@ export function selectNextChallenge(
     const challenge = pickFromTier(
       availableChallenges,
       targetTier,
-      previousTopics,
+      previousTopics
     );
     return {
       challengeId: challenge.id,
@@ -69,12 +69,12 @@ export function selectNextChallenge(
     const challenge = pickFromTier(
       availableChallenges,
       targetTier,
-      previousTopics,
+      previousTopics
     );
     return {
       challengeId: challenge.id,
       tier: challenge.tier,
-      reason: `De-escalating: ${!latest.completed ? "did not complete" : `low quality score ${latest.codeQualityScore.toFixed(2)}`}`,
+      reason: `De-escalating: ${latest.completed ? `low quality score ${latest.codeQualityScore.toFixed(2)}` : "did not complete"}`,
     };
   }
 
@@ -83,7 +83,7 @@ export function selectNextChallenge(
     const challenge = pickFromTier(
       availableChallenges,
       currentTier,
-      previousTopics,
+      previousTopics
     );
     return {
       challengeId: challenge.id,
@@ -100,7 +100,7 @@ export function selectNextChallenge(
   const challenge = pickFromTier(
     availableChallenges,
     targetTier,
-    previousTopics,
+    previousTopics
   );
   return {
     challengeId: challenge.id,
@@ -118,13 +118,13 @@ export function selectNextChallenge(
 function pickFromTier(
   available: Challenge[],
   targetTier: number,
-  previousTopics: string[],
+  previousTopics: string[]
 ): Challenge {
   const previousTopicSet = new Set(previousTopics);
 
   // Filter out challenges whose topics overlap with previous ones
   const differentTopic = available.filter(
-    (c) => !c.topics.some((t) => previousTopicSet.has(t)),
+    (c) => !c.topics.some((t) => previousTopicSet.has(t))
   );
 
   // Prefer challenges with different topics; fall back to all available
@@ -136,7 +136,7 @@ function pickFromTier(
 
   // Try closest tier
   const sorted = [...pool].sort(
-    (a, b) => Math.abs(a.tier - targetTier) - Math.abs(b.tier - targetTier),
+    (a, b) => Math.abs(a.tier - targetTier) - Math.abs(b.tier - targetTier)
   );
   return sorted[0];
 }

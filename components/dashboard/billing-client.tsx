@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type PlanData = {
@@ -62,7 +62,7 @@ export function BillingClient({
   };
 
   const usagePercent =
-    usage.limit === Infinity
+    usage.limit === Number.POSITIVE_INFINITY
       ? 0
       : Math.min(Math.round((usage.used / usage.limit) * 100), 100);
 
@@ -79,16 +79,16 @@ export function BillingClient({
     <div className="space-y-8">
       {/* ── Usage meter ──────────────────────────────────────────── */}
       <section className="rounded-xl border bg-card/50 p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold mb-0.5">Monthly Usage</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="mb-0.5 font-semibold text-base">Monthly Usage</h2>
+            <p className="text-muted-foreground text-xs">
               Completed assessments this billing period
             </p>
           </div>
           <Badge
+            className="border-primary/30 bg-primary/10 text-primary"
             variant="outline"
-            className="bg-primary/10 text-primary border-primary/30"
           >
             {plans[currentPlan]?.name ?? "Starter"} plan
           </Badge>
@@ -98,38 +98,41 @@ export function BillingClient({
           <div className="flex items-baseline justify-between text-sm">
             <span className="font-medium tabular-nums">
               {usage.used}{" "}
-              <span className="text-muted-foreground font-normal">
-                / {usage.limit === Infinity ? "Unlimited" : usage.limit}
+              <span className="font-normal text-muted-foreground">
+                /{" "}
+                {usage.limit === Number.POSITIVE_INFINITY
+                  ? "Unlimited"
+                  : usage.limit}
               </span>
             </span>
-            {usage.limit !== Infinity && (
-              <span className="text-xs text-muted-foreground">
+            {usage.limit !== Number.POSITIVE_INFINITY && (
+              <span className="text-muted-foreground text-xs">
                 {usagePercent}% used
               </span>
             )}
           </div>
 
-          {usage.limit !== Infinity && (
+          {usage.limit !== Number.POSITIVE_INFINITY && (
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className={cn(
                   "h-full rounded-full transition-all duration-500",
-                  usageColor,
+                  usageColor
                 )}
                 style={{ width: `${usagePercent}%` }}
               />
             </div>
           )}
 
-          {usage.limit === Infinity && (
+          {usage.limit === Number.POSITIVE_INFINITY && (
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
-              <div className="h-full w-full rounded-full bg-primary/40 animate-shimmer" />
+              <div className="h-full w-full animate-shimmer rounded-full bg-primary/40" />
             </div>
           )}
         </div>
 
         {!usage.allowed && (
-          <p className="mt-3 text-xs text-destructive font-medium">
+          <p className="mt-3 font-medium text-destructive text-xs">
             You have reached your monthly assessment limit. Upgrade your plan to
             continue.
           </p>
@@ -141,22 +144,23 @@ export function BillingClient({
         <section className="rounded-xl border bg-card/50 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold mb-0.5">
+              <h2 className="mb-0.5 font-semibold text-base">
                 Manage Subscription
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Update payment method, view invoices, or cancel your subscription
+              <p className="text-muted-foreground text-xs">
+                Update payment method, view invoices, or cancel your
+                subscription
               </p>
             </div>
             <Button
-              variant="outline"
-              onClick={handlePortal}
               disabled={loading === "portal"}
+              onClick={handlePortal}
+              variant="outline"
             >
               {loading === "portal" ? (
                 <span className="flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 animate-spin"
+                    className="h-4 w-4 animate-spin"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -170,8 +174,8 @@ export function BillingClient({
                     />
                     <path
                       className="opacity-75"
-                      fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      fill="currentColor"
                     />
                   </svg>
                   Opening...
@@ -186,7 +190,7 @@ export function BillingClient({
 
       {/* ── Plan cards ───────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold mb-4">Plans</h2>
+        <h2 className="mb-4 font-semibold text-base">Plans</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {planOrder.map((planId) => {
             const plan = plans[planId];
@@ -196,18 +200,18 @@ export function BillingClient({
 
             return (
               <div
-                key={planId}
                 className={cn(
-                  "rounded-xl border p-5 flex flex-col transition-colors",
+                  "flex flex-col rounded-xl border p-5 transition-colors",
                   isCurrent
                     ? "border-primary/50 bg-primary/5"
-                    : "bg-card/50 hover:border-muted-foreground/30",
+                    : "bg-card/50 hover:border-muted-foreground/30"
                 )}
+                key={planId}
               >
-                <div className="flex items-center gap-2 mb-3">
+                <div className="mb-3 flex items-center gap-2">
                   <h3 className="font-semibold">{plan.name}</h3>
                   {isCurrent && (
-                    <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">
+                    <Badge className="border-primary/30 bg-primary/20 text-[10px] text-primary">
                       Current
                     </Badge>
                   )}
@@ -215,36 +219,36 @@ export function BillingClient({
 
                 <div className="mb-4">
                   {isEnterprise ? (
-                    <span className="text-2xl font-bold">Custom</span>
+                    <span className="font-bold text-2xl">Custom</span>
                   ) : (
                     <>
-                      <span className="text-2xl font-bold">
+                      <span className="font-bold text-2xl">
                         &pound;{plan.price}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         /month
                       </span>
                     </>
                   )}
                 </div>
 
-                <ul className="space-y-2 mb-6 flex-1">
+                <ul className="mb-6 flex-1 space-y-2">
                   {plan.features.map((feature) => (
                     <li
+                      className="flex items-start gap-2 text-muted-foreground text-sm"
                       key={feature}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
                     >
                       <svg
-                        className="w-4 h-4 text-primary mt-0.5 shrink-0"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-primary"
                         fill="none"
-                        viewBox="0 0 24 24"
                         stroke="currentColor"
                         strokeWidth={2}
+                        viewBox="0 0 24 24"
                       >
                         <path
+                          d="M4.5 12.75l6 6 9-13.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M4.5 12.75l6 6 9-13.5"
                         />
                       </svg>
                       {feature}
@@ -253,29 +257,29 @@ export function BillingClient({
                 </ul>
 
                 {isCurrent ? (
-                  <Button variant="outline" disabled className="w-full">
+                  <Button className="w-full" disabled variant="outline">
                     Current plan
                   </Button>
                 ) : isEnterprise ? (
                   <Button
-                    variant="outline"
                     className="w-full"
                     onClick={() =>
                       window.open("mailto:sales@reactassess.com", "_blank")
                     }
+                    variant="outline"
                   >
                     Contact Sales
                   </Button>
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={() => handleCheckout(planId)}
                     disabled={loading === planId}
+                    onClick={() => handleCheckout(planId)}
                   >
                     {loading === planId ? (
                       <span className="flex items-center gap-2">
                         <svg
-                          className="w-4 h-4 animate-spin"
+                          className="h-4 w-4 animate-spin"
                           fill="none"
                           viewBox="0 0 24 24"
                         >
@@ -289,8 +293,8 @@ export function BillingClient({
                           />
                           <path
                             className="opacity-75"
-                            fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            fill="currentColor"
                           />
                         </svg>
                         Redirecting...

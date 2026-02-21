@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import ReactDiffViewer, { DiffMethod } from "react-diff-viewer-continued";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { ScreenSizeGuard } from "./ScreenSizeGuard";
 
 interface ReviewFile {
@@ -54,27 +54,38 @@ export function MRReviewPanel({
   const [summary, setSummary] = useState(() => {
     try {
       return sessionStorage.getItem(`ra_review_summary_${sessionId}`) ?? "";
-    } catch { return ""; }
+    } catch {
+      return "";
+    }
   });
   const [comments, setComments] = useState<InlineComment[]>(() => {
     try {
       const stored = sessionStorage.getItem(`ra_review_comments_${sessionId}`);
       return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   });
   const [activeCommentLine, setActiveCommentLine] = useState<number | null>(
-    null,
+    null
   );
   const [commentDraft, setCommentDraft] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Persist summary and comments to sessionStorage
   useEffect(() => {
-    try { sessionStorage.setItem(`ra_review_summary_${sessionId}`, summary); } catch {}
+    try {
+      sessionStorage.setItem(`ra_review_summary_${sessionId}`, summary);
+    } catch {}
   }, [summary, sessionId]);
 
   useEffect(() => {
-    try { sessionStorage.setItem(`ra_review_comments_${sessionId}`, JSON.stringify(comments)); } catch {}
+    try {
+      sessionStorage.setItem(
+        `ra_review_comments_${sessionId}`,
+        JSON.stringify(comments)
+      );
+    } catch {}
   }, [comments, sessionId]);
 
   const file = scenario.files[0];
@@ -94,7 +105,7 @@ export function MRReviewPanel({
         setCommentDraft("");
       }
     },
-    [activeCommentLine],
+    [activeCommentLine]
   );
 
   const addComment = useCallback(() => {
@@ -192,210 +203,216 @@ export function MRReviewPanel({
 
   return (
     <ScreenSizeGuard>
-    <div className="min-h-dvh bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-lg font-bold font-display">
-                  {scenario.title}
-                </h1>
-                <Badge variant="secondary" className="text-xs">
-                  Review Phase
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-                    J
+      <div className="flex min-h-dvh flex-col bg-background">
+        {/* Header */}
+        <header className="sticky top-0 z-10 border-border border-b bg-card/80 px-6 py-4 backdrop-blur-sm">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="mb-1 flex items-center gap-3">
+                  <h1 className="font-bold font-display text-lg">
+                    {scenario.title}
+                  </h1>
+                  <Badge className="text-xs" variant="secondary">
+                    Review Phase
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3 text-muted-foreground text-sm">
+                  <span className="flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted font-bold text-[10px]">
+                      J
+                    </span>
+                    {scenario.author}
                   </span>
-                  {scenario.author}
+                  <span>
+                    {scenario.files.length} file
+                    {scenario.files.length > 1 ? "s" : ""} changed
+                  </span>
+                  <span>
+                    {comments.length} comment{comments.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
+              <button
+                className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+                type="button"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Review"
+                )}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-6">
+          {/* PR Description */}
+          <div className="glass-card rounded-xl p-5">
+            <h3 className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Pull Request Description
+            </h3>
+            <p className="text-foreground/85 text-sm leading-relaxed">
+              {scenario.description}
+            </p>
+          </div>
+
+          {/* Overall review summary */}
+          <div className="glass-card rounded-xl p-5">
+            <h3 className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Your Overall Review
+            </h3>
+            <textarea
+              className="min-h-[100px] w-full resize-none rounded-lg border border-border bg-input p-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              onChange={(e) => setSummary(e.target.value)}
+              placeholder="Write your overall review of this merge request. Summarize the key issues you found and your recommendation (approve, request changes, or reject)."
+              value={summary}
+            />
+          </div>
+
+          {/* Diff viewer */}
+          <div className="glass-card overflow-hidden rounded-xl">
+            <div className="flex items-center gap-2 border-border border-b px-4 py-2.5">
+              <span className="font-mono text-muted-foreground text-xs">
+                {file.path}
+              </span>
+              <Badge
+                className="border-success/20 bg-success/10 text-[10px] text-success"
+                variant="outline"
+              >
+                +{file.newCode.split("\n").length} lines
+              </Badge>
+              <span className="ml-auto text-muted-foreground text-xs">
+                Click a line number to add a comment
+              </span>
+            </div>
+
+            <div className="[&_pre]:!bg-transparent [&_table]:!w-full text-sm">
+              <ReactDiffViewer
+                compareMethod={DiffMethod.LINES}
+                highlightLines={commentedLines}
+                newValue={file.newCode}
+                oldValue={file.oldCode}
+                onLineNumberClick={(lineId: string) => handleLineClick(lineId)}
+                splitView={false}
+                styles={diffStyles}
+                useDarkTheme={true}
+              />
+            </div>
+          </div>
+
+          {/* Inline comment form (appears when a line is clicked) */}
+          {activeCommentLine !== null && (
+            <div className="glass-card animate-scale-in rounded-xl p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Badge className="font-mono text-[10px]" variant="outline">
+                  Line {activeCommentLine}
+                </Badge>
+                <span className="text-muted-foreground text-xs">
+                  Adding comment on {file.path}
                 </span>
-                <span>
-                  {scenario.files.length} file
-                  {scenario.files.length > 1 ? "s" : ""} changed
+              </div>
+              <textarea
+                autoFocus
+                className="mb-3 min-h-[80px] w-full resize-none rounded-lg border border-border bg-input p-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                onChange={(e) => setCommentDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                    e.preventDefault();
+                    addComment();
+                  }
+                  if (e.key === "Escape") {
+                    setActiveCommentLine(null);
+                    setCommentDraft("");
+                  }
+                }}
+                placeholder="Describe the issue you found on this line..."
+                value={commentDraft}
+              />
+              <div className="flex items-center justify-end gap-2">
+                <span className="mr-auto text-[10px] text-muted-foreground">
+                  {navigator.platform?.includes("Mac") ? "\u2318" : "Ctrl"}
+                  +Enter to submit &middot; Esc to cancel
                 </span>
-                <span>{comments.length} comment{comments.length !== 1 ? "s" : ""}</span>
+                <button
+                  className="px-3 py-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground"
+                  onClick={() => {
+                    setActiveCommentLine(null);
+                    setCommentDraft("");
+                  }}
+                  type="button"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground text-xs transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  disabled={!commentDraft.trim()}
+                  onClick={addComment}
+                  type="button"
+                >
+                  Add Comment
+                </button>
               </div>
             </div>
+          )}
+
+          {/* Comments summary */}
+          {comments.length > 0 && (
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                Your Comments ({comments.length})
+              </h3>
+              <div className="space-y-2">
+                {comments.map((c) => (
+                  <div
+                    className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3"
+                    key={c.id}
+                  >
+                    <Badge
+                      className="mt-0.5 flex-shrink-0 font-mono text-[10px]"
+                      variant="outline"
+                    >
+                      L{c.lineNumber}
+                    </Badge>
+                    <p className="min-w-0 flex-1 text-foreground/85 text-sm">
+                      {c.text}
+                    </p>
+                    <button
+                      className="flex-shrink-0 text-muted-foreground text-xs hover:text-destructive"
+                      onClick={() => removeComment(c.id)}
+                      type="button"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Submit section */}
+          <div className="flex items-center justify-between py-4">
+            <p className="text-muted-foreground text-xs">
+              Review the diff carefully and leave comments on any issues you
+              find.
+            </p>
             <button
-              type="button"
-              onClick={handleSubmit}
+              className="rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
               disabled={isSubmitting}
-              className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+              onClick={handleSubmit}
+              type="button"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Review"
-              )}
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </button>
           </div>
         </div>
-      </header>
-
-      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-6 space-y-6">
-        {/* PR Description */}
-        <div className="glass-card rounded-xl p-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Pull Request Description
-          </h3>
-          <p className="text-sm text-foreground/85 leading-relaxed">
-            {scenario.description}
-          </p>
-        </div>
-
-        {/* Overall review summary */}
-        <div className="glass-card rounded-xl p-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Your Overall Review
-          </h3>
-          <textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            placeholder="Write your overall review of this merge request. Summarize the key issues you found and your recommendation (approve, request changes, or reject)."
-            className="w-full min-h-[100px] bg-input border border-border rounded-lg p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-          />
-        </div>
-
-        {/* Diff viewer */}
-        <div className="glass-card rounded-xl overflow-hidden">
-          <div className="border-b border-border px-4 py-2.5 flex items-center gap-2">
-            <span className="text-xs font-mono text-muted-foreground">
-              {file.path}
-            </span>
-            <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">
-              +{file.newCode.split("\n").length} lines
-            </Badge>
-            <span className="text-xs text-muted-foreground ml-auto">
-              Click a line number to add a comment
-            </span>
-          </div>
-
-          <div className="text-sm [&_pre]:!bg-transparent [&_table]:!w-full">
-            <ReactDiffViewer
-              oldValue={file.oldCode}
-              newValue={file.newCode}
-              splitView={false}
-              useDarkTheme={true}
-              compareMethod={DiffMethod.LINES}
-              styles={diffStyles}
-              highlightLines={commentedLines}
-              onLineNumberClick={(lineId: string) => handleLineClick(lineId)}
-            />
-          </div>
-        </div>
-
-        {/* Inline comment form (appears when a line is clicked) */}
-        {activeCommentLine !== null && (
-          <div className="glass-card rounded-xl p-5 animate-scale-in">
-            <div className="flex items-center gap-2 mb-3">
-              <Badge variant="outline" className="text-[10px] font-mono">
-                Line {activeCommentLine}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                Adding comment on {file.path}
-              </span>
-            </div>
-            <textarea
-              value={commentDraft}
-              onChange={(e) => setCommentDraft(e.target.value)}
-              placeholder="Describe the issue you found on this line..."
-              className="w-full min-h-[80px] bg-input border border-border rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground mb-3"
-              autoFocus
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-                  e.preventDefault();
-                  addComment();
-                }
-                if (e.key === "Escape") {
-                  setActiveCommentLine(null);
-                  setCommentDraft("");
-                }
-              }}
-            />
-            <div className="flex items-center gap-2 justify-end">
-              <span className="text-[10px] text-muted-foreground mr-auto">
-                {navigator.platform?.includes("Mac") ? "\u2318" : "Ctrl"}
-                +Enter to submit &middot; Esc to cancel
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCommentLine(null);
-                  setCommentDraft("");
-                }}
-                className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={addComment}
-                disabled={!commentDraft.trim()}
-                className="px-3 py-1.5 bg-primary text-primary-foreground text-xs rounded-md font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                Add Comment
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Comments summary */}
-        {comments.length > 0 && (
-          <div className="glass-card rounded-xl p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Your Comments ({comments.length})
-            </h3>
-            <div className="space-y-2">
-              {comments.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-start gap-3 bg-secondary/30 rounded-lg p-3"
-                >
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-mono flex-shrink-0 mt-0.5"
-                  >
-                    L{c.lineNumber}
-                  </Badge>
-                  <p className="text-sm text-foreground/85 flex-1 min-w-0">
-                    {c.text}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => removeComment(c.id)}
-                    className="text-xs text-muted-foreground hover:text-destructive flex-shrink-0"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Submit section */}
-        <div className="flex items-center justify-between py-4">
-          <p className="text-xs text-muted-foreground">
-            Review the diff carefully and leave comments on any issues you find.
-          </p>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Review"}
-          </button>
-        </div>
       </div>
-    </div>
     </ScreenSizeGuard>
   );
 }

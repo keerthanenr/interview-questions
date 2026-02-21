@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 /**
  * Auto-polls the page for dossier generation status.
@@ -27,17 +27,17 @@ export function DossierPolling() {
   }, [router]);
 
   return (
-    <div className="rounded-xl border bg-card/50 p-6 mb-6 text-center">
+    <div className="mb-6 rounded-xl border bg-card/50 p-6 text-center">
       <div className="flex flex-col items-center gap-3">
         <div className="flex gap-1">
-          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-          <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-100" />
-          <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-200" />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-primary delay-100" />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-primary delay-200" />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Generating candidate report{".".repeat(dots)}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           This usually takes 30-60 seconds. The page will update automatically.
         </p>
       </div>

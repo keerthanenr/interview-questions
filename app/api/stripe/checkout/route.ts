@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import { getStripe, PLANS, type PlanId } from "@/lib/stripe/config";
-import { getBaseUrl } from "@/lib/utils";
 import type { NextRequest } from "next/server";
+import { getStripe, PLANS, type PlanId } from "@/lib/stripe/config";
+import { createClient } from "@/lib/supabase/server";
+import { getBaseUrl } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     if (planId !== "starter" && planId !== "professional") {
       return Response.json(
         { error: "Invalid plan. Choose starter or professional." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 

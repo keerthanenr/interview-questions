@@ -1,6 +1,6 @@
+import type { NextRequest } from "next/server";
 import { logEvent } from "@/lib/events/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
           error:
             "sessionId, filePath, lineNumber, and commentText are required",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return Response.json(
         { error: "Failed to save comment" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

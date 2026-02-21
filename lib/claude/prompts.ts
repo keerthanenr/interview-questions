@@ -58,7 +58,8 @@ No markdown, no preamble, no explanation. Only the JSON array.`;
  * Prefix added when the candidate completed multiple challenges.
  * Instructs the question generator to span questions across all code blocks.
  */
-export const MULTI_CHALLENGE_QUESTION_PREFIX = `The candidate completed multiple coding challenges during the Build phase. The code below contains all of their submissions, separated by challenge headers. Generate questions that span across ALL challenges — at least one question should reference each challenge. Note which challenge each question relates to in the codeReference field.`;
+export const MULTI_CHALLENGE_QUESTION_PREFIX =
+  "The candidate completed multiple coding challenges during the Build phase. The code below contains all of their submissions, separated by challenge headers. Generate questions that span across ALL challenges — at least one question should reference each challenge. Note which challenge each question relates to in the codeReference field.";
 
 /**
  * Stricter retry prompt appended when the first generation attempt returns invalid JSON.

@@ -1,11 +1,11 @@
 // ─── Dossier generation (V1) ──────────────────────────────────────
 
 import Anthropic from "@anthropic-ai/sdk";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { DOSSIER_ANALYST_PROMPT } from "@/lib/claude/prompts";
-import { calculateTechnicalScore } from "./technical";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { calculateCollaborationScore } from "./collaboration";
 import { calculateCommunicationScore } from "./communication";
+import { calculateTechnicalScore } from "./technical";
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ export async function generateDossier(candidateId: string): Promise<void> {
 
   if (sessionsErr || !sessions || sessions.length === 0) {
     throw new Error(
-      `No sessions found for candidate ${candidateId}: ${sessionsErr?.message ?? "empty result"}`,
+      `No sessions found for candidate ${candidateId}: ${sessionsErr?.message ?? "empty result"}`
     );
   }
 
@@ -133,14 +133,14 @@ export async function generateDossier(candidateId: string): Promise<void> {
     events.map((e) => ({
       event_type: e.event_type,
       payload: e.payload,
-    })),
+    }))
   );
 
   const communicationScore = calculateCommunicationScore(
     reviewComments.map((c) => ({
       comment_text: c.comment_text,
       issue_category: c.issue_category,
-    })),
+    }))
   );
 
   // ── 4. Generate narrative via Claude API ───────────────────────
@@ -165,7 +165,7 @@ export async function generateDossier(candidateId: string): Promise<void> {
         .length,
       codeChanges: events.filter((e) => e.event_type === "code_change").length,
       outputAcceptances: events.filter(
-        (e) => e.event_type === "claude_output_accepted",
+        (e) => e.event_type === "claude_output_accepted"
       ).length,
     },
     submissionCount: submissions.length,
@@ -174,7 +174,7 @@ export async function generateDossier(candidateId: string): Promise<void> {
 
   const prompt = DOSSIER_ANALYST_PROMPT.replace(
     "{candidateData}",
-    JSON.stringify(candidateData, null, 2),
+    JSON.stringify(candidateData, null, 2)
   );
 
   const anthropic = new Anthropic({
@@ -213,7 +213,7 @@ export async function generateDossier(candidateId: string): Promise<void> {
       summary: narrative,
       generated_at: new Date().toISOString(),
     },
-    { onConflict: "candidate_id" },
+    { onConflict: "candidate_id" }
   );
 
   if (upsertErr) {
@@ -228,11 +228,11 @@ export async function generateDossier(candidateId: string): Promise<void> {
  * challenge_submitted pair produces one result entry.
  */
 function deriveChallengeResults(
-  events: EventRow[],
+  events: EventRow[]
 ): { tier: number; completed: boolean; timeUsed: number; timeLimit: number }[] {
   const starts = events.filter((e) => e.event_type === "challenge_started");
   const completions = events.filter(
-    (e) => e.event_type === "challenge_submitted",
+    (e) => e.event_type === "challenge_submitted"
   );
 
   return starts.map((start) => {
@@ -241,7 +241,7 @@ function deriveChallengeResults(
     const timeLimit = (start.payload.time_limit as number) ?? 0;
 
     const completion = completions.find(
-      (c) => c.payload.challenge_id === challengeId,
+      (c) => c.payload.challenge_id === challengeId
     );
 
     const startTime = new Date(start.created_at).getTime();
@@ -263,7 +263,7 @@ function deriveChallengeResults(
  * Derive quickfire results from stored responses.
  */
 function deriveQuickfireResults(
-  responses: QuickfireRow[],
+  responses: QuickfireRow[]
 ): { correct: boolean; difficulty: number }[] {
   return responses.map((r) => ({
     correct: r.is_correct === true,
@@ -277,14 +277,13 @@ function deriveQuickfireResults(
  */
 function deriveReviewStats(
   events: EventRow[],
-  comments: ReviewCommentRow[],
+  comments: ReviewCommentRow[]
 ): { found: number; total: number } {
   // Look for a phase_transition event entering the review phase that
   // may contain total_issues in its payload.
   const reviewPhaseEvent = events.find(
     (e) =>
-      e.event_type === "phase_transition" &&
-      e.payload.to_phase === "review",
+      e.event_type === "phase_transition" && e.payload.to_phase === "review"
   );
 
   const total =

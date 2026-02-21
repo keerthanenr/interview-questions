@@ -36,7 +36,7 @@ export function calculateTechnicalScore(data: TechnicalInput): TechnicalScore {
   const quickfireScore = scoreQuickfire(data.quickfireResults);
   const reviewScore = scoreReview(
     data.reviewIssuesFound,
-    data.reviewIssuesTotal,
+    data.reviewIssuesTotal
   );
 
   const weightedOverall =

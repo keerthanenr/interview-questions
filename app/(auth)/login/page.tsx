@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,18 +33,18 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mesh-gradient min-h-dvh flex items-center justify-center px-4">
+    <main className="mesh-gradient flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-sm animate-slide-up">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">{APP_NAME}</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
+        <div className="mb-8 text-center">
+          <h1 className="font-bold text-3xl tracking-tight">{APP_NAME}</h1>
+          <p className="mt-2 text-muted-foreground text-sm">
             Sign in to your account
           </p>
         </div>
 
-        <div className="glass-card rounded-xl p-6 space-y-6">
+        <div className="glass-card space-y-6 rounded-xl p-6">
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg px-4 py-3">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive text-sm">
               {error}
             </div>
           )}
@@ -53,28 +53,28 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@company.com"
-                required
                 autoComplete="email"
                 disabled={isPending}
+                id="email"
+                name="email"
+                placeholder="you@company.com"
+                required
+                type="email"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                required
                 autoComplete="current-password"
                 disabled={isPending}
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                required
+                type="password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button className="w-full" disabled={isPending} type="submit">
               {isPending ? "Signing in..." : "Sign in"}
             </Button>
           </form>
@@ -89,10 +89,10 @@ export default function LoginPage() {
           </div>
 
           <Button
-            variant="outline"
             className="w-full"
-            onClick={handleGoogleSignIn}
             disabled={isPending}
+            onClick={handleGoogleSignIn}
+            variant="outline"
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -115,11 +115,11 @@ export default function LoginPage() {
             Continue with Google
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-muted-foreground text-sm">
             Don&apos;t have an account?{" "}
             <Link
+              className="font-medium text-primary hover:underline"
               href="/signup"
-              className="text-primary hover:underline font-medium"
             >
               Sign up
             </Link>

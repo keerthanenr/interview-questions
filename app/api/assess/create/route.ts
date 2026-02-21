@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import type { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const DEFAULT_CHALLENGE_POOL = [
   "todo-list-filtering",
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return Response.json(
         { error: "Failed to create assessment" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

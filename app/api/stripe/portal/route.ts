@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe/config";
-import { getBaseUrl } from "@/lib/utils";
 import type { NextRequest } from "next/server";
+import { getStripe } from "@/lib/stripe/config";
+import { createClient } from "@/lib/supabase/server";
+import { getBaseUrl } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (!org?.stripe_customer_id) {
       return Response.json(
         { error: "No billing account found. Subscribe to a plan first." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 

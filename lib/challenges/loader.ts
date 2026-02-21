@@ -1,8 +1,16 @@
-import todoDB from "@/data/challenges/todo-list.json";
-import dataDashboard from "@/data/challenges/data-dashboard.json";
-import formValidation from "@/data/challenges/form-validation.json";
-import infiniteScroll from "@/data/challenges/infinite-scroll.json";
-import collabCounter from "@/data/challenges/collaborative-counter.json";
+import collabCounter from "@/data/challenges/collaborative-counter.json" with {
+  type: "json",
+};
+import dataDashboard from "@/data/challenges/data-dashboard.json" with {
+  type: "json",
+};
+import formValidation from "@/data/challenges/form-validation.json" with {
+  type: "json",
+};
+import infiniteScroll from "@/data/challenges/infinite-scroll.json" with {
+  type: "json",
+};
+import todoDB from "@/data/challenges/todo-list.json" with { type: "json" };
 
 export interface Challenge {
   id: string;
@@ -54,7 +62,6 @@ export async function getChallengeForSession(session: {
   }
 
   // Default: use challengeId from metadata, fall back to data-dashboard (tier 2)
-  const challengeId =
-    (metadata.challengeId as string) ?? "data-dashboard";
+  const challengeId = (metadata.challengeId as string) ?? "data-dashboard";
   return getChallenge(challengeId);
 }

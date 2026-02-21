@@ -11,7 +11,7 @@ export async function loadReviewScenario() {
     process.cwd(),
     "data",
     "review-scenarios",
-    "react-dashboard-mr.json",
+    "react-dashboard-mr.json"
   );
   const raw = await fs.readFile(filePath, "utf-8");
   return JSON.parse(raw);
@@ -21,11 +21,7 @@ export async function loadReviewScenario() {
  * Load fallback questions for when AI question generation fails.
  */
 export async function loadFallbackQuestions() {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "fallback-questions.json",
-  );
+  const filePath = path.join(process.cwd(), "data", "fallback-questions.json");
   const raw = await fs.readFile(filePath, "utf-8");
   return JSON.parse(raw);
 }
