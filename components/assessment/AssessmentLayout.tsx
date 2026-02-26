@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getTestFileContent } from "@/lib/challenges/tests";
+import type { TerminalMetrics } from "@/lib/scoring/terminal-analyzer";
+import { analyzeTerminalLog } from "@/lib/scoring/terminal-analyzer";
 import { cn } from "@/lib/utils";
 import { ChallengePanel } from "./ChallengePanel";
 import { SandboxIDE } from "./SandboxIDE";
@@ -104,7 +106,11 @@ export function AssessmentLayout({
 
   // Load next challenge via adaptive engine
   const loadNextChallenge = useCallback(
-    async (completed: boolean, timeUsedMs: number) => {
+    async (
+      completed: boolean,
+      timeUsedMs: number,
+      terminalMtx?: TerminalMetrics | null
+    ) => {
       if (challengeIndex >= MAX_CHALLENGES - 1 || overallTimeLeft <= 0) {
         return true;
       }
@@ -123,6 +129,7 @@ export function AssessmentLayout({
             completed,
             timeUsedMs,
             timeLimitMs: currentChallenge.timeLimit * 60 * 1000,
+            terminalMetrics: terminalMtx ?? null,
           }),
         });
 
@@ -189,27 +196,49 @@ export function AssessmentLayout({
           codeStateRef.current["/App.js"] ??
           "";
 
-        // Run tests in the sandbox and capture results
-        let testResults = null;
-        try {
-          const sandboxUrl = process.env.NEXT_PUBLIC_SANDBOX_WORKER_URL || "";
-          const sandboxSecret =
-            process.env.NEXT_PUBLIC_SANDBOX_APP_SECRET || "";
-          const testRes = await fetch(`${sandboxUrl}/sandbox/test`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${sandboxSecret}`,
-            },
-            body: JSON.stringify({ sessionId }),
-          });
-          if (testRes.ok) {
-            const testData = await testRes.json();
-            testResults = testData.testResults;
-          }
-        } catch {
-          // Test run failure shouldn't block submission
-        }
+        const sandboxUrl = process.env.NEXT_PUBLIC_SANDBOX_WORKER_URL || "";
+        const sandboxSecret = process.env.NEXT_PUBLIC_SANDBOX_APP_SECRET || "";
+        const sandboxHeaders = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sandboxSecret}`,
+        };
+
+        // Run tests and fetch terminal log concurrently
+        const [testResults, terminalMetrics] = await Promise.all([
+          // Run tests in the sandbox
+          (async () => {
+            try {
+              const testRes = await fetch(`${sandboxUrl}/sandbox/test`, {
+                method: "POST",
+                headers: sandboxHeaders,
+                body: JSON.stringify({ sessionId }),
+              });
+              if (testRes.ok) {
+                const testData = await testRes.json();
+                return testData.testResults;
+              }
+            } catch {
+              // Test run failure shouldn't block submission
+            }
+            return null;
+          })(),
+          // Fetch terminal I/O log for behavioral analysis
+          (async () => {
+            try {
+              const logRes = await fetch(
+                `${sandboxUrl}/sandbox/terminal-log?sessionId=${sessionId}`,
+                { headers: sandboxHeaders }
+              );
+              if (logRes.ok) {
+                const logData = await logRes.json();
+                return logData.entries ?? null;
+              }
+            } catch {
+              // Terminal log failure shouldn't block submission
+            }
+            return null;
+          })(),
+        ]);
 
         await fetch("/api/assess/challenge/submit", {
           method: "POST",
@@ -219,10 +248,11 @@ export function AssessmentLayout({
             code: mainCode,
             challengeId: currentChallenge.id,
             testResults,
+            terminalLog: terminalMetrics,
           }),
         });
 
-        // Log test results as an event
+        // Log test results and terminal metrics as events (fire-and-forget)
         if (testResults) {
           fetch("/api/assess/events", {
             method: "POST",
@@ -242,7 +272,38 @@ export function AssessmentLayout({
           }).catch(() => {});
         }
 
-        const isDone = await loadNextChallenge(true, challengeStartTime);
+        // Analyze terminal log into structured metrics
+        const analyzedMetrics =
+          terminalMetrics && terminalMetrics.length > 0
+            ? analyzeTerminalLog(terminalMetrics)
+            : null;
+
+        if (analyzedMetrics && analyzedMetrics.claudeCodeSessionCount > 0) {
+          fetch("/api/assess/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              eventType: "claude_code_interaction",
+              payload: {
+                challenge_id: currentChallenge.id,
+                session_count: analyzedMetrics.claudeCodeSessionCount,
+                prompt_count: analyzedMetrics.claudeCodePromptCount,
+                total_duration_ms: analyzedMetrics.claudeCodeTotalDurationMs,
+                time_ratio: analyzedMetrics.claudeCodeTimeRatio,
+                output_ratio: analyzedMetrics.claudeCodeOutputRatio,
+                iteration_score: analyzedMetrics.iterationScore,
+                timestamp: new Date().toISOString(),
+              },
+            }),
+          }).catch(() => {});
+        }
+
+        const isDone = await loadNextChallenge(
+          true,
+          challengeStartTime,
+          analyzedMetrics
+        );
 
         if (!isDone) {
           isSubmittingRef.current = false;

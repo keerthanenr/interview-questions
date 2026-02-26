@@ -5,6 +5,7 @@
  * - Creates per-session containers with pre-loaded challenge code
  * - Provides file read/write operations for the Monaco editor
  * - Proxies terminal WebSocket connections for xterm.js
+ * - Captures terminal I/O for behavioral scoring (Claude Code usage analysis)
  * - Runs tests and captures results
  * - Exposes the Vite dev server preview URL
  */
@@ -19,6 +20,17 @@ interface Env {
   APP_SECRET: string;
   ALLOWED_ORIGIN: string;
 }
+
+// Terminal I/O log entry written to container filesystem as JSONL
+interface IOEntry {
+  ts: number; // epoch milliseconds
+  dir: "in" | "out"; // input from user or output from container
+  data: string;
+}
+
+const TERMINAL_LOG_PATH = "/workspace/.terminal-io.jsonl";
+const FLUSH_INTERVAL_MS = 15_000; // flush buffer to container every 15s
+const MAX_BUFFER_SIZE = 5000; // max entries before auto-flush
 
 interface CreateRequest {
   sessionId: string;
@@ -313,6 +325,44 @@ export default {
         }
         containerWs.accept();
 
+        // ── Terminal I/O capture ─────────────────────────────────
+        // Buffer terminal input/output for behavioral analysis.
+        // Periodically flushes to a JSONL file in the container.
+        const ioBuffer: IOEntry[] = [];
+        let flushInProgress = false;
+
+        async function flushBuffer() {
+          if (flushInProgress || ioBuffer.length === 0) return;
+          flushInProgress = true;
+          try {
+            const lines = ioBuffer
+              .splice(0, ioBuffer.length)
+              .map((e) => JSON.stringify(e))
+              .join("\n");
+            // Append to log file (read existing + concat, since writeFile overwrites)
+            let existing = "";
+            try {
+              const file = await sandbox.readFile(TERMINAL_LOG_PATH);
+              existing = file.content ?? "";
+            } catch {
+              // File doesn't exist yet
+            }
+            await sandbox.writeFile(
+              TERMINAL_LOG_PATH,
+              existing ? `${existing}\n${lines}` : lines
+            );
+          } catch {
+            // Non-critical — don't break terminal over logging failure
+          } finally {
+            flushInProgress = false;
+          }
+        }
+
+        // Periodic flush interval
+        const flushTimer = setInterval(() => {
+          flushBuffer();
+        }, FLUSH_INTERVAL_MS);
+
         // Subscribe to PTY output stream
         containerWs.send(
           JSON.stringify({
@@ -334,6 +384,15 @@ export default {
                 serverWs.send(
                   JSON.stringify({ type: "output", data: streamData.data })
                 );
+                // Capture output
+                ioBuffer.push({
+                  ts: Date.now(),
+                  dir: "out",
+                  data: streamData.data,
+                });
+                if (ioBuffer.length >= MAX_BUFFER_SIZE) {
+                  flushBuffer();
+                }
               } else if (streamData.type === "pty_exit") {
                 serverWs.send(
                   JSON.stringify({
@@ -356,6 +415,12 @@ export default {
               containerWs.send(
                 JSON.stringify({ type: "pty_input", ptyId, data: msg.data })
               );
+              // Capture input
+              ioBuffer.push({
+                ts: Date.now(),
+                dir: "in",
+                data: msg.data,
+              });
             } else if (msg.type === "resize" && msg.cols && msg.rows) {
               containerWs.send(
                 JSON.stringify({
@@ -371,11 +436,15 @@ export default {
           }
         });
 
-        // Handle disconnect cleanup
+        // Handle disconnect cleanup — flush remaining buffer
         serverWs.addEventListener("close", () => {
+          clearInterval(flushTimer);
+          flushBuffer();
           containerWs.close();
         });
         containerWs.addEventListener("close", () => {
+          clearInterval(flushTimer);
+          flushBuffer();
           serverWs.close();
         });
 
@@ -517,6 +586,56 @@ export default {
           status: previewResponse.status,
           headers: responseHeaders,
         });
+      }
+
+      // ──── GET /sandbox/terminal-log ────────────────────────────
+      if (
+        url.pathname === "/sandbox/terminal-log" &&
+        request.method === "GET"
+      ) {
+        const sessionId = url.searchParams.get("sessionId");
+        if (!sessionId) {
+          return jsonResponse(
+            { error: "sessionId required" },
+            400,
+            origin,
+            env.ALLOWED_ORIGIN
+          );
+        }
+
+        const sandbox = getSandbox(env.Sandbox, sessionId);
+
+        try {
+          const file = await sandbox.readFile(TERMINAL_LOG_PATH);
+          const content = file.content ?? "";
+          // Parse JSONL lines into an array
+          const entries: IOEntry[] = content
+            .split("\n")
+            .filter((line: string) => line.trim())
+            .map((line: string) => {
+              try {
+                return JSON.parse(line);
+              } catch {
+                return null;
+              }
+            })
+            .filter(Boolean);
+
+          return jsonResponse(
+            { entries, count: entries.length },
+            200,
+            origin,
+            env.ALLOWED_ORIGIN
+          );
+        } catch {
+          // No log file yet (terminal hasn't been used)
+          return jsonResponse(
+            { entries: [], count: 0 },
+            200,
+            origin,
+            env.ALLOWED_ORIGIN
+          );
+        }
       }
 
       return jsonResponse(

@@ -1,4 +1,5 @@
 import type { Challenge } from "@/lib/challenges/loader";
+import type { TerminalMetrics } from "@/lib/scoring/terminal-analyzer";
 
 /**
  * Test results from real test runner execution.
@@ -39,20 +40,24 @@ const TOPIC_PATTERNS: Record<string, RegExp[]> = {
 };
 
 /**
- * Combined code quality score using real test results (primary)
- * and heuristic analysis (secondary).
+ * Combined code quality score using real test results (primary),
+ * heuristic analysis (secondary), and terminal behavioral metrics (tertiary).
  *
- * When test results are available, they contribute 60% of the score.
- * The heuristic analysis contributes the remaining 40%.
+ * Weight distribution depends on available data:
+ * - Tests + terminal: 50% tests, 30% heuristic, 20% terminal behavior
+ * - Tests only:       60% tests, 40% heuristic
+ * - Terminal only:    70% heuristic, 30% terminal behavior
+ * - Neither:          100% heuristic
  */
 export function quickCodeQualityScore(
   code: string,
   challenge: Challenge,
-  testResults?: TestResults | null
+  testResults?: TestResults | null,
+  terminalMetrics?: TerminalMetrics | null
 ): number {
   if (!code || code.trim().length === 0) return 0;
 
-  // ── Primary: Test results (0.6 weight when available) ───────
+  // ── Primary: Test results ───────────────────────────────────
   let testScore = 0;
   const hasTests = testResults && testResults.total > 0;
 
@@ -108,12 +113,49 @@ export function quickCodeQualityScore(
 
   heuristicScore = Math.min(heuristicScore, 1);
 
+  // ── Tertiary: Terminal behavioral quality ───────────────────
+  // Rewards candidates who use Claude Code strategically (iterative
+  // refinement) rather than blindly accepting AI output.
+  let terminalBehaviorScore = 0;
+  const hasTerminal = terminalMetrics && terminalMetrics.totalDurationMs > 0;
+
+  if (hasTerminal) {
+    // Iteration depth is positive — shows refinement and engagement
+    const iterationComponent = terminalMetrics.iterationScore * 0.4;
+
+    // Manual activity shows the candidate is actively working, not just
+    // copy-pasting from Claude Code
+    const manualComponent = terminalMetrics.manualActivityRatio * 0.3;
+
+    // Using the terminal at all shows engagement (running tests, debugging)
+    const engagementComponent =
+      Math.min(terminalMetrics.commandCount / 10, 1) * 0.3;
+
+    terminalBehaviorScore = Math.min(
+      iterationComponent + manualComponent + engagementComponent,
+      1
+    );
+  }
+
   // ── Combine scores ─────────────────────────────────────────
+  if (hasTests && hasTerminal) {
+    // Best case: all three signals
+    return Math.min(
+      testScore * 0.5 + heuristicScore * 0.3 + terminalBehaviorScore * 0.2,
+      1
+    );
+  }
+
   if (hasTests) {
-    // 60% test results, 40% heuristic
+    // Tests + heuristic
     return Math.min(testScore * 0.6 + heuristicScore * 0.4, 1);
   }
 
-  // Fallback to pure heuristic when no test results available
+  if (hasTerminal) {
+    // Heuristic + terminal behavior
+    return Math.min(heuristicScore * 0.7 + terminalBehaviorScore * 0.3, 1);
+  }
+
+  // Fallback to pure heuristic when no test results or terminal data
   return heuristicScore;
 }

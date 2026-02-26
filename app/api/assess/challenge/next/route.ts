@@ -4,6 +4,7 @@ import { selectNextChallenge } from "@/lib/adaptive/engine";
 import { quickCodeQualityScore } from "@/lib/adaptive/quality";
 import { quickAIRelianceScore } from "@/lib/adaptive/reliance";
 import { getChallenge, getChallengePool } from "@/lib/challenges/loader";
+import type { TerminalMetrics } from "@/lib/scoring/terminal-analyzer";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
       timeUsedMs,
       timeLimitMs,
       testResults,
+      terminalMetrics,
     } = await request.json();
 
     if (!sessionId || !challengeId) {
@@ -43,13 +45,21 @@ export async function POST(request: NextRequest) {
     const currentChallenge = await getChallenge(challengeId);
     const allChallenges = await getChallengePool();
 
-    // Calculate scores — use real test results when available
+    // Cast terminal metrics (comes as JSON from request body)
+    const tMetrics = (terminalMetrics as TerminalMetrics) ?? null;
+
+    // Calculate scores — use real test results and terminal metrics when available
     const codeQualityScore = quickCodeQualityScore(
       code ?? "",
       currentChallenge,
-      testResults ?? null
+      testResults ?? null,
+      tMetrics
     );
-    const aiRelianceRatio = quickAIRelianceScore(eventList, code ?? "");
+    const aiRelianceRatio = quickAIRelianceScore(
+      eventList,
+      code ?? "",
+      tMetrics
+    );
 
     // Get previous results from session metadata
     const { data: session } = await supabase

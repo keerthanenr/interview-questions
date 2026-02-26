@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId, code, challengeId, testResults } = await request.json();
+    const { sessionId, code, challengeId, testResults, terminalLog } =
+      await request.json();
 
     if (!sessionId || !code) {
       return Response.json(
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
         challenge_id: challengeId,
         submitted_at: new Date().toISOString(),
         test_results: testResults ?? null,
+        terminal_io_entries: terminalLog ? terminalLog.length : 0,
+        has_terminal_log: !!terminalLog,
       },
     });
 
